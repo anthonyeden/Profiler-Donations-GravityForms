@@ -41,6 +41,7 @@ if (class_exists("GFForms")) {
             $field_settings = self::$_instance->formFields();
             $product_field_settings = self::$_instance->productFields();
             $hiddenFields = self::$_instance->hiddenFields();
+            $userdefinedfields = self::$_instance->userDefinedFields();
             
             // All the fields to add to the feed:
             $fields = array();
@@ -245,27 +246,72 @@ if (class_exists("GFForms")) {
             );
             
             $fields[] = array(
-                "label" => 'Donation Source Code (User Defined 1)',
+                "label" => 'UDF: Donation Source Code',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_sourcecode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation source code to be sent to",
+                "choices" => $userdefinedfields,
+            );
+            
+            $fields[] = array(
+                "label" => 'Donation Source Code - Default Value',
                 "type" => "text",
                 "name" => "profilerdonation_sourcecode",
                 "required" => false,
-                "tooltip" => "Can be overriden by GET parameter or Short Code",
+                "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
             );
             
             $fields[] = array(
-                "label" => 'Pledge Source Code (User Defined 6)',
+                "label" => 'UDF: Pledge Source Code',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_pledgesourcecode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the pledge source code to be sent to",
+                "choices" => $userdefinedfields,
+            );
+            
+            $fields[] = array(
+                "label" => 'Pledge Source Code - Default Value',
                 "type" => "text",
                 "name" => "profilerdonation_pledgesourcecode",
                 "required" => false,
-                "tooltip" => "Can be overriden by GET parameter or Short Code",
+                "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
             );
             
             $fields[] = array(
-                "label" => 'Pledge Acquisition Code (User Defined 7)',
+                "label" => 'UDF: Pledge Acquisition Code',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_pledgeacquisitioncode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the pledge acquisition code to be sent to",
+                "choices" => $userdefinedfields,
+            );
+            
+            $fields[] = array(
+                "label" => 'Pledge Acquisition Code - Default Value',
                 "type" => "text",
                 "name" => "profilerdonation_pledgeacquisitioncode",
                 "required" => false,
                 "tooltip" => "Can be overriden by GET parameter or Short Code",
+            );
+            
+            $fields[] = array(
+                "label" => 'UDF: Client IP Address',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_clientip",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
+                "choices" => $userdefinedfields,
+            );
+            
+            $fields[] = array(
+                "label" => 'UDF: Gateway Transaction ID',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_gatewaytransactionid",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the gateway transaction ID to be sent to (certain gateways only)",
+                "choices" => $userdefinedfields,
             );
             
             $fields[] = array(
@@ -424,6 +470,24 @@ if (class_exists("GFForms")) {
             return $formfields;
         }
         
+        protected function userDefinedFields() {
+            
+            $fields = array(array(
+                    "value" => "",
+                    "label" => "None",
+                ));
+            
+            for($i = 1; $i <= 99; $i++) {
+                $fields[] = array(
+                    "value" => $i,
+                    "label" => "User Defined Field " . $i,
+                );
+            }
+            
+            return $fields;
+            
+        }
+        
         public function process_feed($feed, $entry, $form) {
             // Processes the feed and prepares to send it to Profiler
             
@@ -477,9 +541,22 @@ if (class_exists("GFForms")) {
             $postData['comments'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
             $postData['userdefined2'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
             
-            $postData['userdefined1'] = $this->getDonationCode($feed, 'sourcecode'); // Source Code
-            $postData['userdefined6'] = $this->getDonationCode($feed, 'pledgesourcecode'); // Pledge Source Code
-            $postData['userdefined7'] = $this->getDonationCode($feed, 'pledgeacquisitioncode'); // Pledge Acquisition Code
+            // User Defined Fields:
+            if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'sourcecode');
+            }
+            
+            if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
+            }
+            
+            if($feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode');
+            }
+            
+            if($feed['meta']['profilerdonation_userdefined_clientip'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientip']] = $this->getClientIPAddress();
+            }
             
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "once") {
                 // Once-off donation
