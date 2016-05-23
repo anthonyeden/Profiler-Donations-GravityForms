@@ -21,6 +21,7 @@ class ProfilerDonation_GF_Launch {
         GFAddOn::register('GFProfilerDonate');
         
         require_once('shortcodes.php');
+        require_once('states_australia.php');
         
         if(isset($_POST['gform_submit'])) {
             // If we're receiving a Gravity Form submission, ensure the session is started
