@@ -542,19 +542,24 @@ if (class_exists("GFForms")) {
             $postData['userdefined2'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
             
             // User Defined Fields:
+            
             if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
+                // Donation Source Code
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'sourcecode');
             }
             
             if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
+                // Pledge Source Code
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
             }
             
             if($feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode'] !== "") {
+                // Pledge Acqusition code
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode');
             }
             
             if($feed['meta']['profilerdonation_userdefined_clientip'] !== "") {
+                // Client's IP Address
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientip']] = $this->getClientIPAddress();
             }
             
