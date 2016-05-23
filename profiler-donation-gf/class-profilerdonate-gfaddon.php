@@ -558,6 +558,11 @@ if (class_exists("GFForms")) {
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientip']] = $this->getClientIPAddress();
             }
             
+            if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($entry['transaction_id'])) {
+                // Gateway transaction id
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
+            }
+            
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "once") {
                 // Once-off donation
                 unset($postData['cardnumber']);
