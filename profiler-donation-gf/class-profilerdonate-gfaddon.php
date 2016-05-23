@@ -640,15 +640,15 @@ if (class_exists("GFForms")) {
             $number = preg_replace('/[^\d]/','', $number);
             
             if (preg_match('/^3[47][0-9]{13}$/', $number)) {
-                return 'American Express';
+                return 'Amex';
             } elseif (preg_match('/^3(?:0[0-5]|[68][0-9])[0-9]{11}$/', $number)) {
-                return 'Diners Club';
+                return 'Diner';
             } elseif (preg_match('/^6(?:011|5[0-9][0-9])[0-9]{12}$/', $number)) {
                 return 'Discover';
             } elseif (preg_match('/^(?:2131|1800|35\d{3})\d{11}$/', $number)) {
                 return 'JCB';
             } elseif (preg_match('/^5[1-5][0-9]{14}$/', $number)) {
-                return 'MasterCard';
+                return 'Master';
             } elseif (preg_match('/^4[0-9]{12}(?:[0-9]{3})?$/', $number)) {
                 return 'Visa';
             } else {
