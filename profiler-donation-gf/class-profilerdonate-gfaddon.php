@@ -568,23 +568,24 @@ if (class_exists("GFForms")) {
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
             }
             
-            if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "once") {
+            if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
+                // Recurring recurring donation
+                $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
+                
+            } else {
                 // Once-off donation
                 unset($postData['cardnumber']);
                 unset($postData['cardexpiry']);
                 unset($postData['cardtype']);
                 unset($postData['pledgeamount']);
-                unset($postData['userdefined6']);
-                unset($postData['userdefined7']);
-                
-            } else {
-                // Recurring recurring donation
-                $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
+                unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
+                unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
                 
             }
             
             // Make the response to the Profiler server with our integration data
             $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData);
+            
             
             // Save Profiler response data back to the form entry
             $logsToStore = json_encode($pfResponse);
