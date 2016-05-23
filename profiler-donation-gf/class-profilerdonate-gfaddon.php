@@ -694,6 +694,7 @@ if (class_exists("GFForms")) {
                 "expiry_month" => False,
                 "expiry_year" => False,
                 "name" => False,
+                "usingSpecialCardField" => False,
             );
             
             foreach ($form["fields"] as $fieldkey => $field) {
@@ -715,6 +716,11 @@ if (class_exists("GFForms")) {
                     
                     $details['name'] = rgpost('input_' . $field['id'] . '_5');
                 }
+            }
+            
+            if(isset($_POST['gf_pf_cardnum']) && !empty($_POST['gf_pf_cardnum'])) {
+                $details['number'] = $_POST['gf_pf_cardnum'];
+                $details['usingSpecialCardField'] = True;
             }
             
             return $details;
