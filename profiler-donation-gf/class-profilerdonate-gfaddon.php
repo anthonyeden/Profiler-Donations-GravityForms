@@ -574,9 +574,8 @@ if (class_exists("GFForms")) {
                 
             } else {
                 // Once-off donation
-                unset($postData['cardnumber']);
-                unset($postData['cardexpiry']);
-                unset($postData['cardtype']);
+                $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
+                $postData['cardexpiry'] = date("m") . " " . date("Y");
                 unset($postData['pledgeamount']);
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
