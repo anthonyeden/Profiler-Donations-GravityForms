@@ -666,21 +666,7 @@ if (class_exists("GFForms")) {
         
         public function getTotalAmount($entry) {
             // Returns the total amount as a float
-            
-            $form = RGFormsModel::get_forms_by_id($entry['form_id']);
-            $total = 0;
-            
-            foreach ($form[0]["fields"] as $key => $field) {
-                if ($field['type'] == 'product') {
-                    $total += $this->clean_amount(rgpost('input_' . $field['id'])) / 100;
-                    
-                } elseif ($field['type'] == 'profilerdonate') {
-                    $total += $this->clean_amount(rgpost('input_' . $field['id'].'.1')) / 100;
-                    
-                }
-            }
-            
-            return $total;
+            return (float)$entry['payment_amount'];
             
         }
         
