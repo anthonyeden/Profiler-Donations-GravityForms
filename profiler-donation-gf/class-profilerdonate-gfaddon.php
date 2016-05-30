@@ -108,6 +108,15 @@ if (class_exists("GFForms")) {
             );
             
             $fields[] = array(
+                "label" => 'Payment Method',
+                "type" => "select",
+                "name" => "profilerdonation_paymentmethod",
+                "required" => false,
+                "choices" => $field_settings,
+                "tooltip" => "The value of this field must be set to 'creditcard' or 'bankdebit'. If this field isn't set, or an invalid value is passed, we assume it's a credit card."
+            );
+            
+            $fields[] = array(
                 "label" => 'Pledge Frequency',
                 "type" => "select",
                 "name" => "profilerdonation_pledgefreq",
@@ -233,6 +242,30 @@ if (class_exists("GFForms")) {
                 "label" => 'Client: Website',
                 "type" => "select",
                 "name" => "profilerdonation_clientwebsite",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Bank Debit: Account Name',
+                "type" => "select",
+                "name" => "profilerdonation_bankdebit_accountname",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Bank Debit: BSB',
+                "type" => "select",
+                "name" => "profilerdonation_bankdebit_bsb",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Bank Debit: Account Number',
+                "type" => "select",
+                "name" => "profilerdonation_bankdebit_accountnumber",
                 "required" => false,
                 "choices" => $field_settings
             );
@@ -534,9 +567,6 @@ if (class_exists("GFForms")) {
             $postData['cardnumber'] = $cardDetails['number'];
             $postData['cardexpiry'] = $cardDetails['expiry_month'] . " " . $cardDetails['expiry_year'];
             
-            // This feed only processes on success - so we assume an approved transaction
-            $postData['status'] = "Approved";
-            
             // Comments
             $postData['comments'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
             $postData['userdefined2'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
@@ -580,6 +610,23 @@ if (class_exists("GFForms")) {
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
                 
+            }
+            
+            if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
+                // Bank Debit - not currently wired up to Profiler correctly
+                $postData['status'] = "Pending";
+                unset($postData['cardtype']);
+                unset($postData['cardnumber']);
+                unset($postData['cardexpiry']);
+                
+                $postData['bankaccountname'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountname"]);
+                $postData['bankbsb'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_bsb"]);
+                $postData['bankaccountnumber'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountnumber"]);
+                
+            } else {
+                // Credit Card
+                // This feed only processes on success - so we assume an approved transaction
+                $postData['status'] = "Approved";
             }
             
             // Make the response to the Profiler server with our integration data
