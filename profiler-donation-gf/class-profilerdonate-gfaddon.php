@@ -602,6 +602,11 @@ if (class_exists("GFForms")) {
                 // Recurring recurring donation
                 $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
                 
+                if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
+                    // If it's recurring, the donation gets the pledge source code instead of the donation code
+                    $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
+                }
+
             } else {
                 // Once-off donation
                 $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
