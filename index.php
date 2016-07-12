@@ -4,8 +4,25 @@ Plugin Name: Profiler Donations - Gravity Forms Add-On
 Plugin URI: http://mediarealm.com.au/
 Description: Integrates Gravity Forms with Profiler, enabling donation data to be sent directly to Profiler.
 Version: 1.0.7
+
 Author: Media Realm
 Author URI: http://www.mediarealm.com.au/
+
+License: GPL2
+
+'Profiler Donation Gravity Forms' is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+any later version.
+ 
+'Profiler Donation Gravity Forms' is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+ 
+You should have received a copy of the GNU General Public License
+along with 'Profiler Donation Gravity Forms'. If not, see https://www.gnu.org/licenses/gpl-2.0.html.
+
 */
 
 add_action('gform_loaded', array('ProfilerDonation_GF_Launch', 'ProfilerDonation_load'), 5);
