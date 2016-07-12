@@ -1,5 +1,7 @@
-# Profiler Donations / Gravity Forms - Wordpress Plugin
-A Wordpress plugin to integrate your Gravity Forms with Profile IMS. This is an unofficial plugin, not created by the developers of Profiler IMS.
+![Profiler + Gravity Forms](http://mediarealm.com.au/wp-content/uploads/2016/07/Gravity-Forms-Profiler-Banner.png)
+
+# [Profiler Donations / Gravity Forms - Wordpress Plugin](http://mediarealm.com.au/wordpress-plugins/profiler-gravity-forms-donation-plugin/)
+A Wordpress plugin to integrate your Gravity Forms with Profile IMS. This is an unofficial plugin, not created by the developers of Profiler IMS. [Visit the plugin's website](http://mediarealm.com.au/wordpress-plugins/profiler-gravity-forms-donation-plugin/)
 
 This plugin is free software, distributd under the GPLv2 license. See the full terms of the license in the file `LICENSE.md` and the disclaimer at the bottom of this `README.md` file.
 
@@ -13,7 +15,7 @@ This guide will help you configure your Profiler system for RAPID integration wi
 *	[Gravity Forms](http://www.gravityforms.com)
 *	Payment Gateway integration with Gravity Forms (must be pre-existing and use standard Gravity Forms payment hooks and database fields)
   * For Australian non-profits, we recommend the [Gravity Forms eWay plugin](https://wordpress.org/plugins/gravityforms-eway/)
-*	[Profiler](https://profiler.net.au) v7.3 or higher
+* Profiler v7.3 or higher
 *	Full administrative access to Profiler
 *	cURL Enabled on Web Server
 
