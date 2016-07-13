@@ -705,6 +705,13 @@ if (class_exists("GFForms")) {
             
             $result = curl_exec($ch);
             $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            
+            if(curl_error($ch)) {
+                $cURL_error = curl_error($ch);
+            } else {
+                $cURL_error = null;
+            }
+            
             curl_close($ch);
             
             return array(
@@ -713,6 +720,7 @@ if (class_exists("GFForms")) {
                 "data" => $result,
                 "dataXML" => simplexml_load_string($result),
                 "dataArray" => json_decode(json_encode((array)simplexml_load_string($result)), 1),
+                "cURLError" => $cURL_error,
             );
         }
         
