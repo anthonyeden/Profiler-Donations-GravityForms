@@ -766,6 +766,7 @@ if (class_exists("GFForms")) {
             if(isset($_POST['gf_pf_cardnum']) && !empty($_POST['gf_pf_cardnum'])) {
                 $details['number'] = $_POST['gf_pf_cardnum'];
                 $details['usingSpecialCardField'] = True;
+                $details['type'] = $this->getCardTypeFromNumber($details['number']);
             }
             
             return $details;
