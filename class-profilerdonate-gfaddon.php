@@ -646,7 +646,7 @@ if (class_exists("GFForms")) {
             $entry[$feed['meta']['profilerdonation_logs']] = htmlentities($logsToStore);
             GFAPI::update_entry($entry);
             
-            if($pfResponse['dataArray']['status'] != "Pass") {
+            if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
                 // Profiler failed. Send the failure email.
                 $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profilerdonation_erroremailaddress']);
             }
@@ -862,6 +862,10 @@ if (class_exists("GFForms")) {
         function sendFailureEmail($entry, $form, $pfResponse, $sendTo) {
             // Sends an alert email if integration with Profiler failed
             
+            if(!isset($pfResponse['dataArray']['error'])) {
+                $pfResponse['dataArray']['error'] = "";
+            }
+
             $headers = '';
             $message = "--- PROFILER DATA FAILURE #" . $form["id"] . "/" . $entry["id"] . " ---" . "\n\n";
             $message .= "Gravity Form #" . $form["id"] . " with Entry ID #" . $entry["id"] . " failed to be sent to the Profiler API.\r\n";
