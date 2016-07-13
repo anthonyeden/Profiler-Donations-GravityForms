@@ -328,6 +328,42 @@ if (class_exists("GFForms")) {
                 "required" => false,
                 "tooltip" => "Can be overriden by GET parameter or Short Code",
             );
+
+            $fields[] = array(
+                "label" => 'UDF: Donation Purpose',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_donationpurposecode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation's purpose code to be sent to",
+                "choices" => $userdefinedfields,
+            );
+            
+            $fields[] = array(
+                "label" => 'Donation Purpose Field',
+                "type" => "select",
+                "name" => "profilerdonation_donationpurposecode",
+                "required" => false,
+                "tooltip" => "This field's value should match the Purpose Codes setup within Profiler.",
+                "choices" => $field_settings
+            );
+
+            $fields[] = array(
+                "label" => 'UDF: Donation Tag',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_donationtagcode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation's tag code to be sent to. Do not set this up if you use Tag Automation within Profiler.",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'Donation Tag Field',
+                "type" => "select",
+                "name" => "profilerdonation_donationtagcode",
+                "required" => false,
+                "tooltip" => "This field's value should match the Tag Codes setup within Profiler.",
+                "choices" => $field_settings
+            );
             
             $fields[] = array(
                 "label" => 'UDF: Client IP Address',
@@ -588,6 +624,14 @@ if (class_exists("GFForms")) {
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode');
             }
             
+            if($feed['meta']['profilerdonation_userdefined_donationpurposecode'] !== "" && $feed['meta']['profilerdonation_donationpurposecode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_donationpurposecode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
+            }
+
+            if($feed['meta']['profilerdonation_userdefined_donationtagcode'] !== "" && $feed['meta']['profilerdonation_donationtagcode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_donationtagcode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtagcode']);
+            }
+
             if($feed['meta']['profilerdonation_userdefined_clientip'] !== "") {
                 // Client's IP Address
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientip']] = $this->getClientIPAddress();
