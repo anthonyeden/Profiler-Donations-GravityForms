@@ -392,6 +392,28 @@ if (class_exists("GFForms")) {
                 "choices" => $hiddenFields
             );
             
+            $fields[] = array(
+                "label" => 'SSL Mode',
+                "type" => "select",
+                "name" => "profilerdonation_sslmode",
+                "required" => false,
+                "choices" => array(
+                    array(
+                        "value" => "normal",
+                        "label" => "Normal"
+                    ),
+                    array(
+                        "value" => "bundled_ca",
+                        "label" => "Use Plugin Bundled CA Certs"
+                    ),
+                    array(
+                        "value" => "dontverifypeer",
+                        "label" => "Don't Verify SSL Peers (Super dangerous. Don't use this!!)"
+                    )
+                ),
+                "tooltip" => "Only change this if there is a legitimate technical reasons for doing so. This will cause insecurities. Use with caution."
+            );
+
             return array(
                 array(
                     "title" => "Profiler Donation Feed Settings",
@@ -679,7 +701,7 @@ if (class_exists("GFForms")) {
             }
             
             // Make the response to the Profiler server with our integration data
-            $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData);
+            $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData, $feed['meta']['profilerdonation_sslmode']);
             
             
             // Save Profiler response data back to the form entry
@@ -737,7 +759,7 @@ if (class_exists("GFForms")) {
             return strtoupper($outputcode);
         }
         
-        protected function sendDataToProfiler($url, $profiler_query) {
+        protected function sendDataToProfiler($url, $profiler_query, $ssl_mode = "normal") {
             // Sends the donation and client data to Profiler via POST
             
             $ch = curl_init();
@@ -747,6 +769,17 @@ if (class_exists("GFForms")) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($profiler_query));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             
+            if($ssl_mode == "bundled_ca") {
+                // Use the CA Cert bundled with this plugin
+                // Sourced from https://curl.haxx.se/ca/cacert.pem
+                curl_setopt($ch, CURLOPT_CAINFO, plugin_dir_path(__FILE__) . "cacert.pem");
+
+            } elseif($ssl_mode == "dontverifypeer") {
+                // Don't verify the SSL peer. This is bad. No one should do this in production.
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+            }
+
             $result = curl_exec($ch);
             $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             
@@ -765,6 +798,7 @@ if (class_exists("GFForms")) {
                 "dataXML" => simplexml_load_string($result),
                 "dataArray" => json_decode(json_encode((array)simplexml_load_string($result)), 1),
                 "cURLError" => $cURL_error,
+                "cURL_SSL_Mode" => $ssl_mode,
             );
         }
         
