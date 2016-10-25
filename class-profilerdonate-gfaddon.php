@@ -30,8 +30,11 @@ if (class_exists("GFForms")) {
         public function init() {
             parent::init();
             //Add the "total amount" merge field:
-            add_filter('gform_replace_merge_tags', array($this, 'mergeTag_totalAmount'), 10, 7);
-            add_action('gform_admin_pre_render', array($this, 'addMergeTags'));
+            add_filter('gform_replace_merge_tags',          array($this, 'mergeTag_totalAmount'), 10, 7);
+            add_action('gform_admin_pre_render',            array($this, 'addMergeTags'));
+
+            // Filter to allow Profiler to process payments internally (instead of a gateway in Gravity Forms)
+            add_filter("gform_validation",                  array($this, "validate_payment"), 1000);
         }
 
         public function feed_settings_fields() {
@@ -55,7 +58,7 @@ if (class_exists("GFForms")) {
             );
             
             $fields[] = array(
-                "label" => 'Profiler Server Address',
+                "label" => 'Profiler Server Address (RAPID)',
                 "type" => "text",
                 "name" => "profilerdonation_serveraddress",
                 "required" => true,
@@ -81,6 +84,34 @@ if (class_exists("GFForms")) {
                 "type" => "text",
                 "name" => "profilerdonation_apipass",
                 "required" => true,
+            );
+
+            $fields[] = array(
+                "label" => 'Use Profiler As A Gateway?',
+                "type" => "select",
+                "name" => "profilerdonation_useasgateway",
+                "required" => false,
+                "tooltip" => "Set this to 'Yes' if you want Profiler to be responsible for processing the payment (instead of a
+                              Gravity Forms Payment Plugin). If you use this option, disable any other Payment Plugins.",
+                'choices' => array(
+                    array(
+                        'label'         => 'No - Gravity Forms will Process Payments',
+                        'value'         => 'false',
+                    ),
+                    array(
+                        'label'         => 'Yes - Profiler will Process Payments',
+                        'value'         => 'true',
+                    ),
+                ),
+            );
+
+            $fields[] = array(
+                "label" => 'Profiler Server Address (Gateway)',
+                "type" => "text",
+                "name" => "profilerdonation_serveraddress_gateway",
+                "required" => false,
+                "tooltip" => "URL in this format: https://your_profiler_url/ProfilerPROG/api/v2/payments/<br />
+                              This is only necessary if you set 'Use Profiler As A Gateway?' to True.",
             );
             
             $fields[] = array(
@@ -579,9 +610,28 @@ if (class_exists("GFForms")) {
             
         }
         
-        public function process_feed($feed, $entry, $form) {
+        public function process_feed($feed, $entry, $form, $fromValidatorProcessPFGateway = false) {
             // Processes the feed and prepares to send it to Profiler
-            
+            // This can either do a gateway payment, or just an integration
+
+            if($feed['meta']['profilerdonation_useasgateway'] == "true" && $fromValidatorProcessPFGateway == true) {
+                $useAsGateway = true;
+
+            } elseif($feed['meta']['profilerdonation_useasgateway'] !== "true" && $fromValidatorProcessPFGateway == true) {
+                // This shouldn't happen. Let's catch it just in case.
+                return false;
+
+            } else {
+                $useAsGateway = false;
+
+            }
+
+            global $gf_profiler_gatewaydata;
+            if(isset($gf_profiler_gatewaydata) && is_array($gf_profiler_gatewaydata)) {
+                echo "SAVE GATEWAY DATA!!!";
+                $this->gformEntryPostSave($entry, $form, $gf_profiler_gatewaydata);
+            }
+
             $form_id = $form["id"];
             $settings = $this->get_form_settings($form);
             
@@ -589,16 +639,25 @@ if (class_exists("GFForms")) {
             $postData = array();
             
             $postData['DB'] = $feed['meta']['profilerdonation_dbname'];
-            $postData['method'] = "integration.send";
             $postData['apikey'] = $feed['meta']['profilerdonation_apikey'];
             $postData['apipass'] = $feed['meta']['profilerdonation_apipass'];
-            $postData['datatype'] = "OLDON";
-            
+
+            if($useAsGateway == true) {
+                // Profiler processes this payment
+                $postData['method'] = "gateway.payment";
+            } else {
+                // Profiler will just record integration data
+                $postData['method'] = "integration.send";
+                $postData['datatype'] = "OLDON";
+            }
+
             // Calculate the total or just use one field:
             if($feed['meta']['profilerdonation_amount'] == "total") {
-                $postData['donationamount'] = $this->getTotalAmount($entry);
-                $postData['pledgeamount'] = $this->getTotalAmount($entry);
+                $postData['amount'] = $this->getTotalAmount($entry, $form);
+                $postData['donationamount'] = $this->getTotalAmount($entry, $form);
+                $postData['pledgeamount'] = $this->getTotalAmount($entry, $form);
             } else {
+                $postData['amount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
                 $postData['donationamount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
                 $postData['pledgeamount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
             }
@@ -607,6 +666,7 @@ if (class_exists("GFForms")) {
             $postData['title'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clienttitle']);
             $postData['surname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientlname']);
             $postData['firstname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientfname']);
+            $postData['clientname'] = $postData['firstname'] . " " . $postData['surname'];
             $postData['org'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientorganisation']);
             $postData['address'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientaddress']);
             $postData['suburb'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientcity']);
@@ -634,6 +694,7 @@ if (class_exists("GFForms")) {
             if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
                 // Donation Source Code
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'sourcecode');
+                $postData['sourcecode'] = $this->getDonationCode($feed, 'sourcecode');
             }
             
             if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
@@ -673,8 +734,8 @@ if (class_exists("GFForms")) {
                     $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
                 }
 
-            } else {
-                // Once-off donation
+            } elseif($useAsGateway == false) {
+                // Once-off donation (not using Profiler as the gateway)
                 $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
                 $postData['cardexpiry'] = date("m") . " " . date("Y");
                 unset($postData['pledgeamount']);
@@ -694,29 +755,167 @@ if (class_exists("GFForms")) {
                 $postData['bankbsb'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_bsb"]);
                 $postData['bankaccountnumber'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountnumber"]);
                 
-            } else {
+            } elseif($useAsGateway == false) {
                 // Credit Card
                 // This feed only processes on success - so we assume an approved transaction
                 $postData['status'] = "Approved";
             }
             
             // Make the response to the Profiler server with our integration data
-            $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData, $feed['meta']['profilerdonation_sslmode']);
+            if($useAsGateway == true) {
+                $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress_gateway'], $postData, $feed['meta']['profilerdonation_sslmode']);
+            } else {
+                $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData, $feed['meta']['profilerdonation_sslmode']);
+            }
             
             
-            // Save Profiler response data back to the form entry
-            $logsToStore = json_encode($pfResponse);
-            $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
-            $logsToStore = str_replace($postData['apikey'], "--REDACTED--", $logsToStore);
-            $logsToStore = str_replace($postData['apipass'], "--REDACTED--", $logsToStore);
-            $entry[$feed['meta']['profilerdonation_logs']] = htmlentities($logsToStore);
-            GFAPI::update_entry($entry);
+            if($useAsGateway == true) {
+                // Return the Profiler response data
+                return $pfResponse;
+
+            } else {
+                // Save Profiler response data back to the form entry
+                $logsToStore = json_encode($pfResponse);
+                $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
+                $logsToStore = str_replace($postData['apikey'], "--REDACTED--", $logsToStore);
+                $logsToStore = str_replace($postData['apipass'], "--REDACTED--", $logsToStore);
+                $entry[$feed['meta']['profilerdonation_logs']] = htmlentities($logsToStore);
+                GFAPI::update_entry($entry);
+
+            }
             
             if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
                 // Profiler failed. Send the failure email.
                 $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profilerdonation_erroremailaddress']);
             }
             
+        }
+
+        public function validate_payment($gform_validation_result) {
+            // This function allows Profiler to process the credit card (instead of a separate gateway plugin)
+
+            if(!$gform_validation_result['is_valid']) {
+                // If it's already failed validation...
+                return $gform_validation_result;
+            }
+
+            $form = $gform_validation_result['form'];
+            $entry = GFFormsModel::create_lead($form);
+            $feed = $this->get_feed_instance($form, $entry);
+
+            if(!$feed) {
+                return $gform_validation_result;
+            }
+
+            if($this->hasFormBeenProcessed($form)) {
+                // Entry has already been created
+                $gform_validation_result['is_valid'] = false;
+
+                foreach($form['fields'] as &$field) {
+                    if($field->type == "creditcard") {
+                        $field->failed_validation = true;
+                        $field->validation_message = 'Sorry, this transaction has already been processed.';
+                    }
+                    
+                }
+
+            } else {
+
+                // Send the data through to process_feed with a special flag that makes it try to take the money
+                $result = $this->process_feed($feed, $entry, $form, true);
+
+                if($result['dataArray']['gateway']['response'] == "True") {
+                    // The form passed validation. Good times.
+                    $gform_validation_result['is_valid'] = true;
+
+                    global $gf_profiler_gatewaydata;
+                    $gf_profiler_gatewaydata = array(
+                        "payment_status"                => "Approved",
+                        "payment_date"                  => date('Y-m-d H:i:s'),
+                        "transaction_id"                => $result['dataArray']['gateway']['txn'],
+                        "transaction_type"              => 1,
+                        //"authcode"                      => "",
+                        "gfprofilergateway_unique_id"   => GFFormsModel::get_form_unique_id($form['id']),
+                    );
+
+                    if($feed['meta']['profilerdonation_amount'] == "total") {
+                        $gf_profiler_gatewaydata['payment_amount'] = $this->getTotalAmount($entry, $form);
+                    } else {
+                        $gf_profiler_gatewaydata['payment_amount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
+                    }
+
+                } else {
+                    // The form (overall) failed validation
+                    $gform_validation_result['is_valid'] = false;
+
+                    // Add the error message to the credit card field:
+                    foreach($form['fields'] as &$field) {
+                        if($field->type == "creditcard") {
+                            $field->failed_validation = true;
+                            $field->validation_message = 'We could not process your credit card. Please check your details and try again.';
+                        }
+                        
+                    }
+                }
+
+            }
+
+            $gform_validation_result['form'] = $form;
+            return $gform_validation_result;
+
+        }
+
+        private function get_feed_instance($form, $entry) {
+            // Get all feeds and picks the first.
+            // Realistically we'll only have one active Profiler feed per form
+
+            $feeds = $this->get_feeds($form['id']);
+
+            foreach($feeds as $feed) {
+                if ($feed['is_active'] && $this->is_feed_condition_met($feed, $form, $entry)) {
+                    return $feed;
+                    break;
+                }
+            }
+        }
+
+        private function hasFormBeenProcessed($form) {
+            global $wpdb;
+
+            $unique_id = RGFormsModel::get_form_unique_id($form['id']);
+
+            $sql = "select lead_id from {$wpdb->prefix}rg_lead_meta where meta_key='gfprofilergateway_unique_id' and meta_value = %s";
+            $lead_id = $wpdb->get_var($wpdb->prepare($sql, $unique_id));
+
+            return !empty($lead_id);
+        }
+
+        private function gformEntryPostSave($entry, $form, $gatewaydata) {
+            // Log the successful gateway data
+
+            foreach ($gatewaydata as $key => $val) {
+                switch ($key) {
+                    case 'payment_status':
+                    case 'payment_date':
+                    case 'payment_amount':
+                    case 'transaction_id':
+                    case 'transaction_type':
+                    case 'payment_gateway':
+                    case 'authcode':
+                        // update entry
+                        $entry[$key] = $val;
+                        break;
+
+                    default:
+                        // update entry meta
+                        gform_update_meta($entry['id'], $key, $val);
+                        break;
+                }
+            }
+
+            GFAPI::update_entry($entry);
+
+            return $entry;
         }
         
         protected function getDonationCodes($feed) {
@@ -802,8 +1001,12 @@ if (class_exists("GFForms")) {
             );
         }
         
-        public function getTotalAmount($entry) {
+        public function getTotalAmount($entry, $form = null) {
             // Returns the total amount as a float
+            if(!isset($entry['payment_amount']) && $form !== null) {
+                return GFCommon::get_order_total($form, $entry);
+            }
+            
             return (float)$entry['payment_amount'];
             
         }
@@ -887,7 +1090,7 @@ if (class_exists("GFForms")) {
             
             foreach($text as $key => $val) {
                 if(strpos($text[$key], '{total_amount}') !== false) {
-                    $total = $this->getTotalAmount($entry);
+                    $total = $this->getTotalAmount($entry, $form);
                     $text[$key] = str_replace('{total_amount}', "$" . number_format($total, 2), $text[$key]);
                 }
             }
