@@ -726,7 +726,8 @@ if (class_exists("GFForms")) {
             }
             
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
-                // Recurring recurring donation
+                // Recurring donation
+                $postData['datatype'] = "PLG";
                 $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
                 
                 if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
