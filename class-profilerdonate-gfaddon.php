@@ -35,6 +35,9 @@ if (class_exists("GFForms")) {
 
             // Filter to allow Profiler to process payments internally (instead of a gateway in Gravity Forms)
             add_filter("gform_validation",                  array($this, "validate_payment"), 1000);
+
+            // Enable credit card fields
+            add_filter('gform_enable_credit_card_field',    array($this, "enable_creditcard"), 11);
         }
 
         public function feed_settings_fields() {
@@ -1192,6 +1195,10 @@ if (class_exists("GFForms")) {
             }
             
             return $ipaddress;
+        }
+
+        function enable_creditcard($is_enabled) {
+            return true;
         }
 
     }
