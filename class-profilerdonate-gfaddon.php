@@ -38,6 +38,9 @@ if (class_exists("GFForms")) {
 
             // Enable credit card fields
             add_filter('gform_enable_credit_card_field',    array($this, "enable_creditcard"), 11);
+
+            // Filter to ensure the Payment Meta-Box is displayed
+            add_filter("gform_entry_detail_meta_boxes",     array($this, "metabox_payments"), 10, 3);
         }
 
         public function feed_settings_fields() {
@@ -1199,6 +1202,22 @@ if (class_exists("GFForms")) {
 
         function enable_creditcard($is_enabled) {
             return true;
+        }
+
+        public function metabox_payments($meta_boxes, $entry, $form) {
+            // Allows the Payment Meta Box to be displayed on the 'Entries' screen
+            // From https://www.gravityhelp.com/documentation/article/gform_entry_detail_meta_boxes/
+            
+            if (!isset($meta_boxes['payment'])) {
+                $meta_boxes['payment'] = array(
+                    'title'         => 'Payment Details',
+                    'callback'      => array('GFEntryDetail', 'meta_box_payment_details'),
+                    'context'       => 'side',
+                    'callback_args' => array($entry, $form),
+                );
+            }
+
+            return $meta_boxes;
         }
 
     }
