@@ -634,8 +634,7 @@ if (class_exists("GFForms")) {
 
             global $gf_profiler_gatewaydata;
             if(isset($gf_profiler_gatewaydata) && is_array($gf_profiler_gatewaydata)) {
-                echo "SAVE GATEWAY DATA!!!";
-                $this->gformEntryPostSave($entry, $form, $gf_profiler_gatewaydata);
+                $entry = $this->gformEntryPostSave($entry, $form, $gf_profiler_gatewaydata);
             }
 
             $form_id = $form["id"];
@@ -841,7 +840,7 @@ if (class_exists("GFForms")) {
                         "payment_date"                  => date('Y-m-d H:i:s'),
                         "transaction_id"                => $result['dataArray']['gateway']['txn'],
                         "transaction_type"              => 1,
-                        //"authcode"                      => "",
+                        "payment_method"                => '',
                         "gfprofilergateway_unique_id"   => GFFormsModel::get_form_unique_id($form['id']),
                     );
 
