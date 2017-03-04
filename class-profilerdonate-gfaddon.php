@@ -331,6 +331,21 @@ if (class_exists("GFForms")) {
                 "required" => false,
                 "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
             );
+
+            $fields[] = array(
+                "label" => 'Donation Source Code - Mode',
+                "type" => "select",
+                "name" => "profilerdonation_sourcecodemode",
+                "required" => false,
+                "tooltip" => "Donation Source Codes can be set the normal way (from shortcodes, URL Parameters, and defaults), or set based on the value of a specific form field.",
+                "choices" => array(
+                        array(
+                            "label" => "Regular Behaviour (use Shortcodes, URL Parameters and Defaults)",
+                            "value" => "normal"
+                        )
+                    )
+                    + self::$_instance->formFields("Form Field: "),
+            );
             
             $fields[] = array(
                 "label" => 'UDF: Pledge Source Code',
@@ -468,7 +483,7 @@ if (class_exists("GFForms")) {
             );
         }
         
-        protected function formFields() {
+        protected function formFields($preface = "") {
             // Returns an array of all fields on this form
             
             $form = $this->get_current_form();
@@ -488,14 +503,14 @@ if (class_exists("GFForms")) {
                     foreach ($field['inputs'] as $keyvalue => $inputvalue) {
                         $field_settings = array();
                         $field_settings['value'] = $inputvalue['id'];
-                        $field_settings['label'] = $inputvalue['label'];
+                        $field_settings['label'] = $preface . $inputvalue['label'];
                         $formfields[] = $field_settings;
                     }
                 } elseif($field["type"] != "creditcard") {
                     // Process all fields except credit cards - we don't want them in the list
                     $field_settings = array();
                     $field_settings['value'] = $field['id'];
-                    $field_settings['label'] = $field['label'];
+                    $field_settings['label'] = $preface . $field['label'];
                     $formfields[] = $field_settings;
                 }
             }
@@ -698,8 +713,18 @@ if (class_exists("GFForms")) {
             
             if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
                 // Donation Source Code
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'sourcecode');
-                $postData['sourcecode'] = $this->getDonationCode($feed, 'sourcecode');
+
+                if(isset($feed['meta']['profilerdonation_sourcecodemode']) && $feed['meta']['profilerdonation_sourcecodemode'] !== "normal") {
+                    // The source code is a value of a specified field
+                    $donationSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_sourcecodemode']);
+
+                } else {
+                    // Regular behaviour
+                    $donationSourceCode = $this->getDonationCode($feed, 'sourcecode');
+                }
+
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $donationSourceCode;
+                $postData['sourcecode'] = $donationSourceCode;
             }
             
             if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
