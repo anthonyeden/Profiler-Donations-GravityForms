@@ -838,6 +838,11 @@ if (class_exists("GFForms")) {
                 return $gform_validation_result;
             }
 
+            if($feed['meta']['profilerdonation_useasgateway'] !== "true") {
+                // If we're not using Profiler as a gateway, we don't need to continue validation here.
+                return $gform_validation_result;
+            }
+
             if($this->hasFormBeenProcessed($form)) {
                 // Entry has already been created
                 $gform_validation_result['is_valid'] = false;
