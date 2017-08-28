@@ -701,7 +701,7 @@ if (class_exists("GFForms")) {
             $postData['suburb'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientcity']);
             $postData['state'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientstate']);
             $postData['postcode'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientpostcode']);
-            $postData['country'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientcountry']);
+            $postData['country'] = $this->get_country_name($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientcountry']));
             $postData['phoneah'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientphoneah']);
             $postData['phonebus'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientphonebus']);
             $postData['phonemobile'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientphonemobile']);
@@ -1264,6 +1264,19 @@ if (class_exists("GFForms")) {
 
             return $meta_boxes;
         }
+
+        private function get_country_name($country_code) {
+            $countries = GF_Fields::get('address')->get_countries();
+            foreach($countries as $key => $val) {
+                if(strtoupper($key) == strtoupper($country_code)) {
+                    return $val;
+                }
+            }
+
+            // Code not found, fall back to the supplied code...
+            return $country_code;
+        }
+        
 
     }
 }
