@@ -434,6 +434,15 @@ if (class_exists("GFForms")) {
                 "tooltip" => "Pick the Profiler User Defined Field you wish the gateway transaction ID to be sent to (certain gateways only)",
                 "choices" => $userdefinedfields,
             );
+
+            $fields[] = array(
+                "label" => 'UDF: Form URL',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_formurl",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation's form's URL to be sent to.",
+                "choices" => $userdefinedfields,
+            );
             
             $fields[] = array(
                 "label" => 'Profiler Logs',
@@ -754,6 +763,13 @@ if (class_exists("GFForms")) {
                 // Gateway transaction id
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
             }
+            
+            if($feed['meta']['profilerdonation_userdefined_formurl'] !== "" && isset($entry['source_url'])) {
+                // The URL the form has been embedded on
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_formurl']] = $entry['source_url'];
+            }
+
+            
             
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
                 // Recurring donation
