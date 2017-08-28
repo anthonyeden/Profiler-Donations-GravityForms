@@ -9,6 +9,8 @@ function profilerdonate_setoptions($atts, $content = null) {
     // but we want to have different source-codes per-page without duplicating the forms.
     
     global $profilerdonate_sourcecode_onpage;
+    global $gfDonationIdSmall;
+    global $gfDonationIdRegular;
     
     if(!session_id()) {
         session_start(); 
@@ -18,6 +20,8 @@ function profilerdonate_setoptions($atts, $content = null) {
         'sourcecode' => '',
         'pledgesourcecode' => '',
         'pledgeacquisitioncode' => '',
+        'formid_small' => '',
+        'formid_regular' => '',
     ), $atts );
     
     // Assign the Source Code to the global variable
@@ -32,6 +36,16 @@ function profilerdonate_setoptions($atts, $content = null) {
     // Store the request URI, too. This ensures we don't carry custom sourcecodes between pages
     $_SESSION['profilerdonation_codes_page'] = $_SERVER['REQUEST_URI'];
     
+    // Allow the default form to be replaced on this page (small)
+    if(!empty($a['formid_small'])) {
+        $gfDonationIdSmall = $a['formid_small'];
+    }
+
+    // Allow the default form to be replaced on this page (everything but small)
+    if(!empty($a['formid_regular'])) {
+        $gfDonationIdRegular = $a['formid_regular'];
+    }
+
     // We set this global variable here so it can be checked again on every page load
     $profilerdonate_sourcecode_onpage = true;
     
