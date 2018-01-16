@@ -511,7 +511,7 @@ if (class_exists("GFForms")) {
             $postData['website'] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_clientwebsite']);
             
             // Interaction Text
-            $postData['comments'] = GFCommon::replace_variables($feed['meta']['profilerinteraction_interactiontext'], $form, $entry, false, true);;
+            $postData['comments'] = GFCommon::replace_variables($feed['meta']['profilerinteraction_interactiontext'], $form, $entry, false, true, false, 'text');
 
             // Interaction Type ID
             $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_interactiontype']] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_interactiontype']);
