@@ -58,7 +58,7 @@ class ProfilerDonation_GF_Launch {
 }
 
 // Code to update this plugin via GitHub
-if (is_admin()) {
+if (is_admin() && file_exists('BFIGitHubPluginUploader.php')) {
     if(!class_exists('BFIGitHubPluginUpdater')) {
         require_once( 'BFIGitHubPluginUploader.php' );
     }
