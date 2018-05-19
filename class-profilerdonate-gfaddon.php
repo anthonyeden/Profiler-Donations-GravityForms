@@ -46,12 +46,22 @@ if (class_exists("GFForms")) {
         public function feed_settings_fields() {
             // This function adds all the feed setting fields we need to communicate with Profiler
             $form = $this->get_current_form();
+            $feed = $this->get_current_feed();
             
             $field_settings = self::$_instance->formFields();
             $product_field_settings = self::$_instance->productFields();
             $hiddenFields = self::$_instance->hiddenFields();
+            $checkboxFields = self::$_instance->checkboxFields();
             $userdefinedfields = self::$_instance->userDefinedFields();
             
+            $mailingnumbers = array();
+            for($i = 0; $i <= 99; $i++) {
+                $mailingnumbers[] = array(
+                    "value" => $i,
+                    "label" => $i
+                );
+            }
+
             // All the fields to add to the feed:
             $fields = array();
             
@@ -363,6 +373,21 @@ if (class_exists("GFForms")) {
                 "required" => false,
                 "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
             );
+
+            $fields[] = array(
+                "label" => 'Pledge Source Code - Mode',
+                "type" => "select",
+                "name" => "profilerdonation_pledgesourcecodemode",
+                "required" => false,
+                "tooltip" => "Pledge Source Codes can be set the normal way (from shortcodes, URL Parameters, and defaults), or set based on the value of a specific form field.",
+                "choices" => array(
+                        array(
+                            "label" => "Regular Behaviour (use Shortcodes, URL Parameters and Defaults)",
+                            "value" => "normal"
+                        )
+                    )
+                    + self::$_instance->formFields("Form Field: "),
+            );
             
             $fields[] = array(
                 "label" => 'UDF: Pledge Acquisition Code',
@@ -379,6 +404,24 @@ if (class_exists("GFForms")) {
                 "name" => "profilerdonation_pledgeacquisitioncode",
                 "required" => false,
                 "tooltip" => "Can be overriden by GET parameter or Short Code",
+            );
+
+            $fields[] = array(
+                "label" => 'UDF: Client Acquisition',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_clientacquisitioncode",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the client acquisition code to be sent to.",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'Client Acquisition Field',
+                "type" => "select",
+                "name" => "profilerdonation_clientacquisitioncode",
+                "required" => false,
+                "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
+                "choices" => $field_settings
             );
 
             $fields[] = array(
@@ -416,7 +459,7 @@ if (class_exists("GFForms")) {
                 "tooltip" => "This field's value should match the Tag Codes setup within Profiler.",
                 "choices" => $field_settings
             );
-            
+
             $fields[] = array(
                 "label" => 'UDF: Client IP Address',
                 "type" => "select",
@@ -443,6 +486,46 @@ if (class_exists("GFForms")) {
                 "tooltip" => "Pick the Profiler User Defined Field you wish the donation's form's URL to be sent to.",
                 "choices" => $userdefinedfields,
             );
+
+            $fields[] = array(
+                "label" => 'Number of Mailing Lists',
+                "type" => "select",
+                "name" => "profilerdonation_mailinglist_count",
+                "required" => false,
+                "tooltip" => "Select a quantity of Mailing Lists, save this page, and then configure them. You may need to refresh this page after saving to see the extra fields.",
+                "choices" => $mailingnumbers,
+                "default" => 0,
+            );
+
+            for($i = 1; $i <= $feed['meta']['profilerdonation_mailinglist_count']; $i++) {
+                // Loop over mailing list fields
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': UDF',
+                    "type" => "select",
+                    "name" => "profilerdonation_mailinglist_".$i."_udf",
+                    "required" => false,
+                    "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
+                    "choices" => $userdefinedfields,
+                );
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': UDF Text',
+                    "type" => "text",
+                    "name" => "profilerdonation_mailinglist_".$i."_udftext",
+                    "required" => false,
+                    "tooltip" => "Enter the string Profiler is expecting in this UDF",
+                );
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': Field',
+                    "type" => "select",
+                    "name" => "profilerdonation_mailinglist_".$i."_field",
+                    "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
+                    "required" => false,
+                    "choices" => $checkboxFields
+                );
+            }
             
             $fields[] = array(
                 "label" => 'Profiler Logs',
@@ -596,8 +679,8 @@ if (class_exists("GFForms")) {
         }
         
         
-        protected function checkboxRadioFields() {
-            // Returns an array of checkbox and radio fields
+        protected function checkboxFields() {
+            // Returns an array of checkbox fields
             
             $form = $this->get_current_form();
             $fields = $form['fields'];
@@ -611,11 +694,13 @@ if (class_exists("GFForms")) {
             );
             
             foreach ($fields as $key => $field) {
-                if ($field['type'] == 'checkbox' || $field['type'] == 'radio') {
-                    $formfields[] = array(
-                        "value" => $field['id'],
-                        "label" => $field['label']
-                    );
+                if ($field['type'] == 'checkbox') {
+                    foreach($field['inputs'] as $input) {
+                        $formfields[] = array(
+                            "value" => $input['id'],
+                            "label" => "Field #" . $input['id'] . " - " . $field['label'] . " / " . $input['label']
+                        );
+                    }
                 }
             }
 
@@ -729,7 +814,7 @@ if (class_exists("GFForms")) {
 
                 } else {
                     // Regular behaviour
-                    $donationSourceCode = $this->getDonationCode($feed, 'sourcecode');
+                    $donationSourceCode = $this->getDonationCode($feed, 'sourcecode', $form);
                 }
 
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $donationSourceCode;
@@ -738,12 +823,30 @@ if (class_exists("GFForms")) {
             
             if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
                 // Pledge Source Code
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
+
+                if(isset($feed['meta']['profilerdonation_pledgesourcecodemode']) && $feed['meta']['profilerdonation_pledgesourcecodemode'] !== "normal") {
+                    // The source code is a value of a specified field
+                    $pledgeSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgesourcecodemode']);
+
+                } else {
+                    // Regular behaviour
+                    $pledgeSourceCode = $this->getDonationCode($feed, 'pledgesourcecode', $form);
+                }
+
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']] = $pledgeSourceCode;
             }
             
             if($feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode'] !== "") {
                 // Pledge Acqusition code
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode');
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode', $form);
+            }
+
+            if($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "" && $feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {
+                // Client Acqusition code
+                $donationSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientacquisitioncode']);
+
+            } else if ($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "") {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientacquisitioncode']] = $this->getDonationCode($feed, 'clientacquisitioncode', $form);
             }
             
             if($feed['meta']['profilerdonation_userdefined_donationpurposecode'] !== "" && $feed['meta']['profilerdonation_donationpurposecode'] !== "") {
@@ -769,17 +872,39 @@ if (class_exists("GFForms")) {
                 $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_formurl']] = $entry['source_url'];
             }
 
+            // Calculate mailing list subscriptions
+            if(isset($feed['meta']['profilerdonation_mailinglist_count']) && is_numeric($feed['meta']['profilerdonation_mailinglist_count'])) {
+                for($i = 1; $i <= $feed['meta']['profilerdonation_mailinglist_count']; $i++) {
+                    // Loop over mailing list fields
+                    $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_mailinglist_".$i."_field"]);
+                    $udf = $feed['meta']["profilerdonation_mailinglist_".$i."_udf"];
+                    $udfText = $feed['meta']["profilerdonation_mailinglist_".$i."_udftext"];
+    
+                    if(!empty($udf) && !empty($udfText) && !empty($mailingFieldValue)) {
+                        $postData['userdefined' . $udf] = $udfText;
+                    }
+    
+                }
+            }
             
             
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
                 // Recurring donation
                 $postData['datatype'] = "PLG";
                 $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
-                
+
+                if(empty($postData['pledgetype'])) {
+                    // We assume a monthly pledge if no frequency is specified
+                    $postData['pledgetype'] = "monthly";
+                }
+
                 if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
                     // If it's recurring, the donation gets the pledge source code instead of the donation code
-                    $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode');
+                    $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode', $form);
                 }
+
+                // Store the donation type
+                gform_add_meta($entry["id"], "profiler_type", "regular", $form_id);
 
             } elseif($useAsGateway == false) {
                 // Once-off donation (not using Profiler as the gateway)
@@ -789,6 +914,9 @@ if (class_exists("GFForms")) {
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
                 unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
                 
+            } else {
+                // Store the donation type
+                gform_add_meta($entry["id"], "profiler_type", "onceoff", $form_id);
             }
             
             if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
@@ -834,6 +962,12 @@ if (class_exists("GFForms")) {
             if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
                 // Profiler failed. Send the failure email.
                 $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profilerdonation_erroremailaddress']);
+            }
+
+            // Store the Integration ID as meta so we can use it later
+            if(isset($pfResponse['dataArray']['id'])) {
+                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form_id);
+                gform_add_meta($entry["id"], "profiler_sourcecode", $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']], $form_id);
             }
             
         }
@@ -981,11 +1115,12 @@ if (class_exists("GFForms")) {
             
         }
         
-        protected function getDonationCode($feed, $code) {
+        protected function getDonationCode($feed, $code, $form = null) {
             // Returns a single donation code based on this heirachy:
             // 1. Page GET paramater
-            // 2. Page Short Code
-            // 3. Feed Default Settings
+            // 2. Value passed in via $form object
+            // 3. Page Short Code
+            // 4. Feed Default Settings
             
             if(isset($_GET[$code])) {
                 // Strip out all non-alphanumeric characters
@@ -993,7 +1128,13 @@ if (class_exists("GFForms")) {
             } else {
                 $outputcode = "";
             }
-            
+
+            if(empty($outputcode)
+                && isset($form['addon_profiler_values'][$code])
+                && !empty($form['addon_profiler_values'][$code])) {
+                    $outputcode = $form['addon_profiler_values'][$code];
+            }
+
             if(empty($outputcode)
                 && isset($_SESSION['profilerdonation_codes_page'])
                 && isset($_SESSION['profilerdonation_' . $code])

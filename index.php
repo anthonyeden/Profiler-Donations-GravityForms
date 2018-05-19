@@ -39,6 +39,8 @@ class ProfilerDonation_GF_Launch {
 
         require_once('class-profilerinteraction-gfaddon.php');
         GFAddOn::register('GFProfilerInteraction');
+        require_once('class-profilerpostdonate-gfaddon.php');
+        GFAddOn::register('GFProfilerPostDonate');
         
         require_once('shortcodes.php');
         require_once('states_australia.php');
