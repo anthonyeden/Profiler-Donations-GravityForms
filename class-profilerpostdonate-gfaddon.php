@@ -501,7 +501,7 @@ if (class_exists("GFForms")) {
             $message .= "This is the data that was sent to the Profiler API:\r\n";
             
             foreach($pfResponse['dataSent'] as $key => $val) {
-                if($key == "apikey" || $key == "apipass" || $key == "cardnumber") {
+                if($key == "apikey" || $key == "apipass" || $key == "cardnumber" || $key == "api_user" || $key == "api_pass") {
                     $val = "--REDACTED--";
                 }
                 $message .= $key . ": " . $val . "\r\n";
