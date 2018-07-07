@@ -436,21 +436,10 @@ if (class_exists("GFForms")) {
                 }
             }
         }
-
-        private function hasFormBeenProcessed($form) {
-            global $wpdb;
-
-            $unique_id = RGFormsModel::get_form_unique_id($form['id']);
-
-            $sql = "select lead_id from {$wpdb->prefix}rg_lead_meta where meta_key='gfprofilergateway_unique_id' and meta_value = %s";
-            $lead_id = $wpdb->get_var($wpdb->prepare($sql, $unique_id));
-
-            return !empty($lead_id);
-        }
         
         protected function sendDataToProfiler($url, $profiler_query, $ssl_mode = "normal") {
             // Sends the donation and client data to Profiler via POST
-            
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query(array("DB" => $profiler_query['DB'], "Call" => 'submit')));
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");

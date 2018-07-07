@@ -1093,7 +1093,7 @@ if (class_exists("GFForms")) {
 
             $unique_id = RGFormsModel::get_form_unique_id($form['id']);
 
-            $sql = "select lead_id from {$wpdb->prefix}rg_lead_meta where meta_key='gfprofilergateway_unique_id' and meta_value = %s";
+            $sql = "select entry_id from {$wpdb->prefix}gf_entry_meta where meta_key='gfprofilergateway_unique_id' and meta_value = %s";
             $lead_id = $wpdb->get_var($wpdb->prepare($sql, $unique_id));
 
             return !empty($lead_id);
