@@ -1177,6 +1177,11 @@ if (class_exists("GFForms")) {
         protected function sendDataToProfiler($url, $profiler_query, $ssl_mode = "normal") {
             // Sends the donation and client data to Profiler via POST
             
+            // Remove whitespace
+            foreach($profiler_query as $key => $val) {
+                $profiler_query[$key] = trim($val);
+            }
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
