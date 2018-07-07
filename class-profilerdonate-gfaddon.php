@@ -814,6 +814,7 @@ if (class_exists("GFForms")) {
             $cardDetails = $this->getCardDetails($form);
             $postData['cardtype'] = $cardDetails['type'];
             $postData['cardnumber'] = $cardDetails['number'];
+            $postData['maskcard'] = $this->creditcard_mask($cardDetails['number']);
             $postData['cardexpiry'] = $cardDetails['expiry_month'] . " " . $cardDetails['expiry_year'];
             
             // Comments
@@ -1382,8 +1383,8 @@ if (class_exists("GFForms")) {
         }
         
         function creditcard_mask($number) {
-            // Returns a credit card with all but the last four numbers masked
-            return substr($number, 0, 4) . str_repeat("X", strlen($number) - 8) . substr($number, -4);
+            // Returns a credit card with all but the first six and last four numbers masked
+            return implode("-", str_split(substr($number, 0, 6) . str_repeat("X", strlen($number) - 10) . substr($number, -4), 4));
         }
         
         function getClientIPAddress() {
