@@ -1011,7 +1011,7 @@ if (class_exists("GFForms")) {
                 return $gform_validation_result;
             }
 
-            if($feed['meta']['profilerdonation_useasgateway'] !== "true") {
+            if($feed['meta']['profilerdonation_useasgateway'] !== "true" || $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
                 // If we're not using Profiler as a gateway, we don't need to continue validation here.
                 return $gform_validation_result;
             }
