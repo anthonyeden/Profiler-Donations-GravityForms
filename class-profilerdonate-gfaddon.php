@@ -324,6 +324,23 @@ if (class_exists("GFForms")) {
                 "required" => false,
                 "choices" => $field_settings,
             );
+
+            $fields[] = array(
+                "label" => 'UDF: Receipt Name',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_receiptname",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation receipt name to be sent to",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'Receipt Name Field',
+                "type" => "select",
+                "name" => "profilerdonation_receiptname",
+                "required" => false,
+                "choices" => $field_settings,
+            );
             
             $fields[] = array(
                 "label" => 'UDF: Donation Source Code',
@@ -805,6 +822,11 @@ if (class_exists("GFForms")) {
             
             // User Defined Fields:
             
+            if($feed['meta']['profilerdonation_userdefined_receiptname'] !== "") {
+                // Receipt Name
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_receiptname']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_receiptname']);
+            }
+
             if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
                 // Donation Source Code
 
