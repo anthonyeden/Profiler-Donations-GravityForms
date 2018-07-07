@@ -355,9 +355,13 @@ if (class_exists("GFForms")) {
             $postData['method'] = "integration.send";
             $postData['datatype'] = "OLDON";
 
+            // Only allow ASCII printable characters.
+            // This is a work-around to the API endpoint not allowing some characters
+            $comments = preg_replace('/[^\x20-\x7E]/','', $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']));
+
             // Comments
-            $postData['comments'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_comments']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
+            $postData['comments'] = $comments;
+            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_comments']] = $comments;
             
             $gfEntryId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_gfentryid']);
             $pfIntegrationId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_profilerid']);
