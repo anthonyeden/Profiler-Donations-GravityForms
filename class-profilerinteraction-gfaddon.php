@@ -67,11 +67,11 @@ if (class_exists("GFForms")) {
             );
             
             $fields[] = array(
-                "label" => 'Profiler Instance Name',
+                "label" => 'Profiler Instance Domain Name',
                 "type" => "text",
-                "name" => "profilerinteraction_instancename",
+                "name" => "profilerinteraction_instancedomainname",
                 "required" => true,
-                "tooltip" => "Your Instance Name can be found in your login URL: https://<instance>.profiler.net.au/",
+                "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profiler.net.au/' is 'instance.profiler.net.au'",
             );
             
             $fields[] = array(
@@ -491,7 +491,10 @@ if (class_exists("GFForms")) {
             $postData['apikey'] = $feed['meta']['profilerinteraction_apikey'];
             $postData['apipass'] = $feed['meta']['profilerinteraction_apipass'];
 
-            $API_URL = "https://" . $feed['meta']['profilerinteraction_instancename'] . ".profiler.net.au/ProfilerPROG/api/v2/interaction/";
+            if((!isset($feed['meta']['profilerinteraction_instancedomainname']) || empty($feed['meta']['profilerinteraction_instancedomainname'])) && !empty($feed['meta']['profilerinteraction_instancename']))
+                $feed['meta']['profilerinteraction_instancedomainname'] = $feed['meta']['profilerinteraction_instancename'] . '.profiler.net.au';
+
+            $API_URL = "https://" . $feed['meta']['profilerinteraction_instancedomainname'] . "/ProfilerPROG/api/v2/interaction/";
 
             // Client Fields:
             $postData['title'] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_clienttitle']);
@@ -512,6 +515,7 @@ if (class_exists("GFForms")) {
             
             // Interaction Text
             $postData['comments'] = GFCommon::replace_variables($feed['meta']['profilerinteraction_interactiontext'], $form, $entry, false, true, false, 'text');
+            $postData['comments'] = html_entity_decode($postData['comments']);
 
             // Interaction Type ID
             $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_interactiontype']] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_interactiontype']);
@@ -519,7 +523,7 @@ if (class_exists("GFForms")) {
             // Confidential? Y/N
             if(strtolower($feed['meta']['profilerinteraction_confidential']) == "true") {
                 $confidential = "Y";
-            } else if(strtolower($feed['meta']['profilerinteraction_iconfidential']) == "false") {
+            } else if(strtolower($feed['meta']['profilerinteraction_confidential']) == "false") {
                 $confidential = "N";
             } else {
                 $confidential = strtolower($this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_confidential']));
