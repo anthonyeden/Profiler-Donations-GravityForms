@@ -45,6 +45,9 @@ class ProfilerDonation_GF_Launch {
 
         require_once('class-profilerlists-gfaddon.php');
         GFAddOn::register('GFProfilerLists');
+
+        require_once('class-profilerlistsbasic-gfaddon.php');
+        GFAddOn::register('GFProfilerListsBasic');
         
         require_once('shortcodes.php');
         require_once('states_australia.php');

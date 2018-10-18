@@ -3,14 +3,14 @@ if (class_exists("GFForms")) {
     
     GFForms::include_payment_addon_framework();
     
-    class GFProfilerLists extends GFFeedAddOn {
+    class GFProfilerListsBasic extends GFFeedAddOn {
         protected $_min_gravityforms_version = "1.8.12";
-        protected $_slug = "profiler-lists-gf";
+        protected $_slug = "profiler-listsbasic-gf";
         protected $_path = "profiler-donation-gf/index.php";
         protected $_full_path = __FILE__;
         protected $_url = "";
-        protected $_title = "Profiler / Gravity Forms - List Integration Feed";
-        protected $_short_title = "Profiler Mailing Lists (Advanced)";
+        protected $_title = "Profiler / Gravity Forms - Mailing Lists (Basic Email) Integration Feed";
+        protected $_short_title = "Profiler Mailing Lists (Basic Email)";
         protected $formid;
         protected $form;
         protected $gateways;
@@ -18,7 +18,7 @@ if (class_exists("GFForms")) {
         
         public static function get_instance() {
             if (self::$_instance == null) {
-                self::$_instance = new GFProfilerLists();
+                self::$_instance = new GFProfilerListsBasic();
             }
             
             self::$_instance->form = self::$_instance->get_current_form();
@@ -97,14 +97,6 @@ if (class_exists("GFForms")) {
             );
 
             $fields[] = array(
-                "label" => 'Client: Title',
-                "type" => "select",
-                "name" => "profilerlist_clienttitle",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
                 "label" => 'Client: First Name',
                 "type" => "select",
                 "name" => "profilerlist_clientfname",
@@ -127,86 +119,6 @@ if (class_exists("GFForms")) {
                 "required" => false,
                 "choices" => $field_settings
             );
-            
-            $fields[] = array(
-                "label" => 'Client: Address',
-                "type" => "select",
-                "name" => "profilerlist_clientaddress",
-                "required" => false,
-                "choices" => $field_settings
-            );
-
-            $fields[] = array(
-                "label" => 'Client: City',
-                "type" => "select",
-                "name" => "profilerlist_clientcity",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: State',
-                "type" => "select",
-                "name" => "profilerlist_clientstate",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Zip/Postcode',
-                "type" => "select",
-                "name" => "profilerlist_clientpostcode",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Country',
-                "type" => "select",
-                "name" => "profilerlist_clientcountry",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Organisation',
-                "type" => "select",
-                "name" => "profilerlist_clientorganisation",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Home Phone',
-                "type" => "select",
-                "name" => "profilerlist_clientphoneah",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Business Phone',
-                "type" => "select",
-                "name" => "profilerlist_clientphonebus",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Mobile Phone',
-                "type" => "select",
-                "name" => "profilerlist_clientphonemobile",
-                "required" => false,
-                "choices" => $field_settings
-            );
-            
-            $fields[] = array(
-                "label" => 'Client: Website',
-                "type" => "select",
-                "name" => "profilerlist_clientwebsite",
-                "required" => false,
-                "choices" => $field_settings
-            );
 
             $fields[] = array(
                 "label" => 'Number of Mailing Lists',
@@ -222,20 +134,11 @@ if (class_exists("GFForms")) {
                 // Loop over mailing list fields
 
                 $fields[] = array(
-                    "label" => 'Mailing List #'.$i.': UDF',
-                    "type" => "select",
-                    "name" => "profilerlist_mailinglist_".$i."_udf",
-                    "required" => false,
-                    "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
-                    "choices" => $userdefinedfields,
-                );
-
-                $fields[] = array(
-                    "label" => 'Mailing List #'.$i.': UDF Text',
+                    "label" => 'Mailing List #'.$i.': Code',
                     "type" => "text",
-                    "name" => "profilerlist_mailinglist_".$i."_udftext",
+                    "name" => "profilerlist_mailinglist_".$i."_code",
                     "required" => false,
-                    "tooltip" => "Enter the string Profiler is expecting in this UDF",
+                    "tooltip" => "Enter the mailing list code from Profiler",
                 );
 
                 $fields[] = array(
@@ -249,21 +152,21 @@ if (class_exists("GFForms")) {
             }
 
             $fields[] = array(
-                "label" => 'UDF: Client IP Address',
+                "label" => 'Client Acquisition Field',
                 "type" => "select",
-                "name" => "profilerlist_userdefined_clientip",
+                "name" => "profilerlist_clientacquisitioncode",
                 "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
-                "choices" => $userdefinedfields,
+                "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
+                "choices" => $field_settings
             );
 
             $fields[] = array(
-                "label" => 'UDF: Form URL',
+                "label" => 'Mail List Acquisition Field',
                 "type" => "select",
-                "name" => "profilerlist_userdefined_formurl",
+                "name" => "profilerlist_mailingacquisitioncode",
                 "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish the donation's form's URL to be sent to.",
-                "choices" => $userdefinedfields,
+                "tooltip" => "This field's value should match the Mailing List Acquisition Codes setup within Profiler.",
+                "choices" => $field_settings
             );
             
             $fields[] = array(
@@ -299,7 +202,7 @@ if (class_exists("GFForms")) {
 
             return array(
                 array(
-                    "title" => "Profiler Lists Feed Settings",
+                    "title" => "Profiler Email Subscription Feed Settings",
                     "fields" => $fields
                 )
             );
@@ -431,47 +334,43 @@ if (class_exists("GFForms")) {
             
             // All the POST data for Profiler gets stored in this variable
             $postData = array();
-            
+
             $postData['DB'] = $feed['meta']['profilerlist_dbname'];
             $postData['apikey'] = $feed['meta']['profilerlist_apikey'];
             $postData['apipass'] = $feed['meta']['profilerlist_apipass'];
 
             // Profiler will just record integration data
-            $postData['method'] = "integration.send";
-            $postData['datatype'] = "LISTS";
+            $postData['method'] = "subscribe";
 
             // Build the URL for this API call
-            $API_URL = "https://" . $feed['meta']['profilerlist_instancedomainname'] . "/ProfilerPROG/api/api_call.cfm";
-            
+            $API_URL = "https://" . $feed['meta']['profilerlist_instancedomainname'] . "/ProfilerPROG/api/v2/mailings/subscribe/";
+
+            $postData['MailtypeID'] = "";
+
             // Calculate mailing list subscriptions
             for($i = 1; $i <= $feed['meta']['profilerlist_mailinglist_count']; $i++) {
                 // Loop over mailing list fields
                 $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profilerlist_mailinglist_".$i."_field"]);
-                $udf = $feed['meta']["profilerlist_mailinglist_".$i."_udf"];
-                $udfText = $feed['meta']["profilerlist_mailinglist_".$i."_udftext"];
+                $code = $feed['meta']["profilerlist_mailinglist_".$i."_code"];
 
-                if(!empty($udf) && !empty($udfText) && (!empty($mailingFieldValue) || $feed['meta']["profilerlist_mailinglist_".$i."_field"] == "always")) {
-                    $postData['userdefined' . $udf] = $udfText;
+                if(!empty($code) && (!empty($mailingFieldValue) || $feed['meta']["profilerlist_mailinglist_".$i."_field"] == "always")) {
+                    $postData['MailtypeID'] .= $code . ",";
                 }
 
             }
 
+            if(substr($postData['MailtypeID'], -1) == ",") {
+                $postData['MailtypeID'] = substr($postData['MailtypeID'], 0, -1);
+            }
+
             // Client Fields:
-            $postData['title'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clienttitle']);
             $postData['surname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientlname']);
             $postData['firstname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientfname']);
-            $postData['clientname'] = $postData['firstname'] . " " . $postData['surname'];
-            $postData['org'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientorganisation']);
-            $postData['address'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientaddress']);
-            $postData['suburb'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientcity']);
-            $postData['state'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientstate']);
-            $postData['postcode'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientpostcode']);
-            $postData['country'] = $this->get_country_name($this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientcountry']));
-            $postData['phoneah'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphoneah']);
-            $postData['phonebus'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphonebus']);
-            $postData['phonemobile'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphonemobile']);
             $postData['email'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientemail']);
-            $postData['website'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientwebsite']);
+
+            // Acquisition codes
+            $postData['cliacq'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientacquisitioncode']);
+            $postData['mailacq'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_mailingacquisitioncode']);
 
             // Send data to Profiler
             $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profilerlist_sslmode']);
@@ -565,7 +464,7 @@ if (class_exists("GFForms")) {
             }
 
             $headers = '';
-            $message = "--- PROFILER MAILING LIST DATA FAILURE #" . $form["id"] . "/" . $entry["id"] . " ---" . "\n\n";
+            $message = "--- PROFILER EMAIL SUBSCRIPTION DATA FAILURE #" . $form["id"] . "/" . $entry["id"] . " ---" . "\n\n";
             $message .= "Gravity Form #" . $form["id"] . " with Entry ID #" . $entry["id"] . " failed to be sent to the Profiler API.\r\n";
             $message .= "HTTP Status Code: " . $pfResponse['httpstatus'] . "\r\n";
             $message .= "Profiler Error Message: " . $pfResponse['dataArray']['error'] . "\r\n";
@@ -579,19 +478,7 @@ if (class_exists("GFForms")) {
                 $message .= $key . ": " . $val . "\r\n";
             }
             
-            wp_mail($sendTo, "Profiler API Failure (Mailing Lists RAPID)", $message, $headers);
-        }
-
-        private function get_country_name($country_code) {
-            $countries = GF_Fields::get('address')->get_countries();
-            foreach($countries as $key => $val) {
-                if(strtoupper($key) == strtoupper($country_code)) {
-                    return $val;
-                }
-            }
-    
-            // Code not found, fall back to the supplied code...
-            return $country_code;
+            wp_mail($sendTo, "Profiler API Failure (Email Subscription)", $message, $headers);
         }
 
     }
