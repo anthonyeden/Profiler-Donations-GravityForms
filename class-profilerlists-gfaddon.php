@@ -3,14 +3,14 @@ if (class_exists("GFForms")) {
     
     GFForms::include_payment_addon_framework();
     
-    class GFProfilerPostDonate extends GFFeedAddOn {
+    class GFProfilerLists extends GFFeedAddOn {
         protected $_min_gravityforms_version = "1.8.12";
-        protected $_slug = "profiler-postdonation-gf";
+        protected $_slug = "profiler-lists-gf";
         protected $_path = "profiler-donation-gf/index.php";
         protected $_full_path = __FILE__;
         protected $_url = "";
-        protected $_title = "Profiler / Gravity Forms - Post-Donation Integration Feed";
-        protected $_short_title = "Profiler Post-Donation";
+        protected $_title = "Profiler / Gravity Forms - List Integration Feed";
+        protected $_short_title = "Profiler Mailing Lists";
         protected $formid;
         protected $form;
         protected $gateways;
@@ -18,7 +18,7 @@ if (class_exists("GFForms")) {
         
         public static function get_instance() {
             if (self::$_instance == null) {
-                self::$_instance = new GFProfilerPostDonate();
+                self::$_instance = new GFProfilerLists();
             }
             
             self::$_instance->form = self::$_instance->get_current_form();
@@ -61,75 +61,170 @@ if (class_exists("GFForms")) {
             );
             
             $fields[] = array(
-                "label" => 'Profiler Server Address (RAPID)',
+                "label" => 'Profiler Instance Domain Name',
                 "type" => "text",
-                "name" => "profilerdonation_serveraddress",
+                "name" => "profilerlist_instancedomainname",
                 "required" => true,
-                "tooltip" => "URL in this format: https://your_profiler_url/ProfilerPROG/api/api_oldon.cfm",
+                "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profiler.net.au/' is 'instance.profiler.net.au'",
             );
             
             $fields[] = array(
                 "label" => 'Profiler Database Name',
                 "type" => "text",
-                "name" => "profilerdonation_dbname",
+                "name" => "profilerlist_dbname",
                 "required" => true,
             );
             
             $fields[] = array(
                 "label" => 'Profiler API Key',
                 "type" => "text",
-                "name" => "profilerdonation_apikey",
+                "name" => "profilerlist_apikey",
                 "required" => true,
             );
             
             $fields[] = array(
                 "label" => 'Profiler API Password',
                 "type" => "text",
-                "name" => "profilerdonation_apipass",
+                "name" => "profilerlist_apipass",
                 "required" => true,
             );
 
             $fields[] = array(
                 "label" => 'Profiler Errors Email Address',
                 "type" => "text",
-                "name" => "profilerdonation_erroremailaddress",
+                "name" => "profilerlist_erroremailaddress",
                 "required" => false,
             );
 
             $fields[] = array(
-                "label" => 'Comments',
+                "label" => 'Client: Title',
                 "type" => "select",
-                "name" => "profilerdonation_comments",
+                "name" => "profilerlist_clienttitle",
                 "required" => false,
-                "choices" => $field_settings,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: First Name',
+                "type" => "select",
+                "name" => "profilerlist_clientfname",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Last Name',
+                "type" => "select",
+                "name" => "profilerlist_clientlname",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Email',
+                "type" => "select",
+                "name" => "profilerlist_clientemail",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Address',
+                "type" => "select",
+                "name" => "profilerlist_clientaddress",
+                "required" => false,
+                "choices" => $field_settings
             );
 
             $fields[] = array(
-                "label" => 'UDF: Comments',
+                "label" => 'Client: City',
                 "type" => "select",
-                "name" => "profilerdonation_userdefined_comments",
+                "name" => "profilerlist_clientcity",
                 "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to use for the Comments field",
-                "choices" => $userdefinedfields,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: State',
+                "type" => "select",
+                "name" => "profilerlist_clientstate",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Zip/Postcode',
+                "type" => "select",
+                "name" => "profilerlist_clientpostcode",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Country',
+                "type" => "select",
+                "name" => "profilerlist_clientcountry",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Organisation',
+                "type" => "select",
+                "name" => "profilerlist_clientorganisation",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Home Phone',
+                "type" => "select",
+                "name" => "profilerlist_clientphoneah",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Business Phone',
+                "type" => "select",
+                "name" => "profilerlist_clientphonebus",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Mobile Phone',
+                "type" => "select",
+                "name" => "profilerlist_clientphonemobile",
+                "required" => false,
+                "choices" => $field_settings
+            );
+            
+            $fields[] = array(
+                "label" => 'Client: Website',
+                "type" => "select",
+                "name" => "profilerlist_clientwebsite",
+                "required" => false,
+                "choices" => $field_settings
             );
 
             $fields[] = array(
                 "label" => 'Number of Mailing Lists',
                 "type" => "select",
-                "name" => "profilerdonation_mailinglist_count",
+                "name" => "profilerlist_mailinglist_count",
                 "required" => false,
                 "tooltip" => "Select a quantity of Mailing Lists, save this page, and then configure them. You may need to refresh this page after saving to see the extra fields.",
                 "choices" => $mailingnumbers,
                 "default" => 0,
             );
 
-            for($i = 1; $i <= $feed['meta']['profilerdonation_mailinglist_count']; $i++) {
+            for($i = 1; $i <= $feed['meta']['profilerlist_mailinglist_count']; $i++) {
                 // Loop over mailing list fields
 
                 $fields[] = array(
                     "label" => 'Mailing List #'.$i.': UDF',
                     "type" => "select",
-                    "name" => "profilerdonation_mailinglist_".$i."_udf",
+                    "name" => "profilerlist_mailinglist_".$i."_udf",
                     "required" => false,
                     "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
                     "choices" => $userdefinedfields,
@@ -138,7 +233,7 @@ if (class_exists("GFForms")) {
                 $fields[] = array(
                     "label" => 'Mailing List #'.$i.': UDF Text',
                     "type" => "text",
-                    "name" => "profilerdonation_mailinglist_".$i."_udftext",
+                    "name" => "profilerlist_mailinglist_".$i."_udftext",
                     "required" => false,
                     "tooltip" => "Enter the string Profiler is expecting in this UDF",
                 );
@@ -146,44 +241,35 @@ if (class_exists("GFForms")) {
                 $fields[] = array(
                     "label" => 'Mailing List #'.$i.': Field',
                     "type" => "select",
-                    "name" => "profilerdonation_mailinglist_".$i."_field",
+                    "name" => "profilerlist_mailinglist_".$i."_field",
                     "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
                     "required" => false,
-                    "choices" => $checkboxRadioFields
+                    "choices" => array_merge($checkboxRadioFields, array(array("value" => "always", "label" => "Always Subscribe"))),
                 );
             }
 
             $fields[] = array(
-                "label" => 'Existing Profiler Integeration ID',
+                "label" => 'UDF: Client IP Address',
                 "type" => "select",
-                "name" => "profilerdonation_profilerid",
-                "tooltip" => 'Link it to a Hidden field that will hold the existing Profiler Integeration ID',
+                "name" => "profilerlist_userdefined_clientip",
                 "required" => false,
-                "choices" => $hiddenFields
+                "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
+                "choices" => $userdefinedfields,
             );
 
             $fields[] = array(
-                "label" => 'Existing GF Entry ID',
+                "label" => 'UDF: Form URL',
                 "type" => "select",
-                "name" => "profilerdonation_gfentryid",
-                "tooltip" => 'Link it to a Hidden field that will hold the existing Gravity Forms Entry ID',
+                "name" => "profilerlist_userdefined_formurl",
                 "required" => false,
-                "choices" => $hiddenFields
-            );
-
-            $fields[] = array(
-                "label" => 'User-Submitted Token',
-                "type" => "select",
-                "name" => "profilerdonation_token",
-                "tooltip" => 'Link it to a Hidden field that will hold the existing generated token',
-                "required" => false,
-                "choices" => $hiddenFields
+                "tooltip" => "Pick the Profiler User Defined Field you wish the donation's form's URL to be sent to.",
+                "choices" => $userdefinedfields,
             );
             
             $fields[] = array(
                 "label" => 'Profiler Logs',
                 "type" => "select",
-                "name" => "profilerdonation_logs",
+                "name" => "profilerlist_logs",
                 "tooltip" => 'Link it to a Hidden field that will hold Profiler Response Logs',
                 "required" => false,
                 "choices" => $hiddenFields
@@ -192,7 +278,7 @@ if (class_exists("GFForms")) {
             $fields[] = array(
                 "label" => 'SSL Mode',
                 "type" => "select",
-                "name" => "profilerdonation_sslmode",
+                "name" => "profilerlist_sslmode",
                 "required" => false,
                 "choices" => array(
                     array(
@@ -224,7 +310,7 @@ if (class_exists("GFForms")) {
             // Returns columns to feed index page
             return array(
                 'feedName'  => 'Name',
-                'profilerdonation_dbname' => 'PF Database Name',
+                'profilerlist_dbname' => 'PF Database Name',
             );
         }
         
@@ -346,77 +432,61 @@ if (class_exists("GFForms")) {
             // All the POST data for Profiler gets stored in this variable
             $postData = array();
             
-            $postData['DB'] = $feed['meta']['profilerdonation_dbname'];
-            $postData['Call'] = "submit";
-            $postData['api_user'] = $feed['meta']['profilerdonation_apikey'];
-            $postData['api_pass'] = $feed['meta']['profilerdonation_apipass'];
+            $postData['DB'] = $feed['meta']['profilerlist_dbname'];
+            $postData['apikey'] = $feed['meta']['profilerlist_apikey'];
+            $postData['apipass'] = $feed['meta']['profilerlist_apipass'];
 
             // Profiler will just record integration data
             $postData['method'] = "integration.send";
-            $postData['datatype'] = "OLDON";
+            $postData['datatype'] = "LISTS";
 
-            // Only allow ASCII printable characters.
-            // This is a work-around to the API endpoint not allowing some characters
-            $comments = preg_replace('/[^\x20-\x7E]/','', $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']));
-
-            // Comments
-            $postData['comments'] = $comments;
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_comments']] = $comments;
+            // Build the URL for this API call
+            $API_URL = "https://" . $feed['meta']['profilerlist_instancedomainname'] . "/ProfilerPROG/api/api_call.cfm";
             
-            $gfEntryId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_gfentryid']);
-            $pfIntegrationId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_profilerid']);
-            $token = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_token']);
-
-            $token_required = md5(password_hash($pfIntegrationId . "/" . $gfEntryId, PASSWORD_DEFAULT, array('salt' => NONCE_SALT)));
-
-            if($token !== $token_required) {
-                // Don't allow entries older than 1hr
-                $entry[$feed['meta']['profilerdonation_logs']] = "Invalid security token was provided!";
-                GFAPI::update_entry($entry);
-                return false;
-            }
-
-            $originalEntryTime = GFAPI::get_entry($gfEntryId)['date_created'];
-
-            if(strtotime($originalEntryTime) <= time() - 3600) {
-                // Don't allow entries older than 1hr
-                $entry[$feed['meta']['profilerdonation_logs']] = "Original Gravity Forms entry is too old - it was created " . $originalEntryTime;
-                GFAPI::update_entry($entry);
-                return false;
-            }
-
-            // This is the ID of the actual donation entry
-            $postData['HoldingID'] = $pfIntegrationId;
-
             // Calculate mailing list subscriptions
-            for($i = 1; $i <= $feed['meta']['profilerdonation_mailinglist_count']; $i++) {
+            for($i = 1; $i <= $feed['meta']['profilerlist_mailinglist_count']; $i++) {
                 // Loop over mailing list fields
-                $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_mailinglist_".$i."_field"]);
-                $udf = $feed['meta']["profilerdonation_mailinglist_".$i."_udf"];
-                $udfText = $feed['meta']["profilerdonation_mailinglist_".$i."_udftext"];
+                $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profilerlist_mailinglist_".$i."_field"]);
+                $udf = $feed['meta']["profilerlist_mailinglist_".$i."_udf"];
+                $udfText = $feed['meta']["profilerlist_mailinglist_".$i."_udftext"];
 
-                if(!empty($udf) && !empty($udfText) && !empty($mailingFieldValue)) {
+                if(!empty($udf) && !empty($udfText) && (!empty($mailingFieldValue) || $feed['meta']["profilerlist_mailinglist_".$i."_field"] == "always")) {
                     $postData['userdefined' . $udf] = $udfText;
                 }
 
             }
 
+            // Client Fields:
+            $postData['title'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clienttitle']);
+            $postData['surname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientlname']);
+            $postData['firstname'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientfname']);
+            $postData['clientname'] = $postData['firstname'] . " " . $postData['surname'];
+            $postData['org'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientorganisation']);
+            $postData['address'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientaddress']);
+            $postData['suburb'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientcity']);
+            $postData['state'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientstate']);
+            $postData['postcode'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientpostcode']);
+            $postData['country'] = $this->get_country_name($this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientcountry']));
+            $postData['phoneah'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphoneah']);
+            $postData['phonebus'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphonebus']);
+            $postData['phonemobile'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientphonemobile']);
+            $postData['email'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientemail']);
+            $postData['website'] = $this->get_field_value($form, $entry, $feed['meta']['profilerlist_clientwebsite']);
+
             // Send data to Profiler
-            $pfResponse = $this->sendDataToProfiler($feed['meta']['profilerdonation_serveraddress'], $postData, $feed['meta']['profilerdonation_sslmode']);
+            $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profilerlist_sslmode']);
             
             // Save Profiler response data back to the form entry
             $logsToStore = json_encode($pfResponse);
             $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData['apikey'], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData['apipass'], "--REDACTED--", $logsToStore);
-            $logsToStore = str_replace($postData['api_user'], "--REDACTED--", $logsToStore);
-            $logsToStore = str_replace($postData['api_pass'], "--REDACTED--", $logsToStore);
-            $entry[$feed['meta']['profilerdonation_logs']] = htmlentities($logsToStore);
+            $entry[$feed['meta']['profilerlist_logs']] = htmlentities($logsToStore);
             GFAPI::update_entry($entry);
             
-            if(!isset($pfResponse['dataArray']['dataset']['method']) || $pfResponse['dataArray']['dataset']['method'] != "Update") {
+            if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
                 // Profiler failed. Send the failure email.
-                $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profilerdonation_erroremailaddress']);
+                $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profilerlist_erroremailaddress']);
             }
 
             // Store the Integration ID as meta so we can use it later
@@ -495,7 +565,7 @@ if (class_exists("GFForms")) {
             }
 
             $headers = '';
-            $message = "--- PROFILER POST-DONATION DATA FAILURE #" . $form["id"] . "/" . $entry["id"] . " ---" . "\n\n";
+            $message = "--- PROFILER MAILING LIST DATA FAILURE #" . $form["id"] . "/" . $entry["id"] . " ---" . "\n\n";
             $message .= "Gravity Form #" . $form["id"] . " with Entry ID #" . $entry["id"] . " failed to be sent to the Profiler API.\r\n";
             $message .= "HTTP Status Code: " . $pfResponse['httpstatus'] . "\r\n";
             $message .= "Profiler Error Message: " . $pfResponse['dataArray']['error'] . "\r\n";
@@ -509,17 +579,22 @@ if (class_exists("GFForms")) {
                 $message .= $key . ": " . $val . "\r\n";
             }
             
-            wp_mail($sendTo, "Profiler API Failure (Post-Donation)", $message, $headers);
+            wp_mail($sendTo, "Profiler API Failure (Mailing Lists RAPID)", $message, $headers);
+        }
+
+        private function get_country_name($country_code) {
+            $countries = GF_Fields::get('address')->get_countries();
+            foreach($countries as $key => $val) {
+                if(strtoupper($key) == strtoupper($country_code)) {
+                    return $val;
+                }
+            }
+    
+            // Code not found, fall back to the supplied code...
+            return $country_code;
         }
 
     }
 }
-    
-    
-    
-    
-    
-    
-    
     
 ?>
