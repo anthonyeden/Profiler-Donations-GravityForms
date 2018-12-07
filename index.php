@@ -30,10 +30,17 @@ add_action('gform_loaded', array('ProfilerDonation_GF_Launch', 'ProfilerDonation
 class ProfilerDonation_GF_Launch {
     public static function ProfilerDonation_load() {
         
-        if (!method_exists('GFForms', 'include_payment_addon_framework')) {
+        if (!class_exists('GFForms') || !method_exists('GFForms', 'include_payment_addon_framework')) {
             return;
         }
-        
+
+        // Ensure the framework is included
+        GFForms::include_payment_addon_framework();
+
+        // Include the new common class
+        require_once('class-profilercommon.php');
+
+        // Inclue the feed classes
         require_once('class-profilerdonate-gfaddon.php');
         GFAddOn::register('GFProfilerDonate');
 
@@ -48,7 +55,11 @@ class ProfilerDonation_GF_Launch {
 
         require_once('class-profilerlistsbasic-gfaddon.php');
         GFAddOn::register('GFProfilerListsBasic');
+
+        require_once('class-profilerevents-gfaddon.php');
+        GFAddOn::register('GFProfilerEvents');
         
+        // Include some random helper functions
         require_once('shortcodes.php');
         require_once('states_australia.php');
         require_once('cardprocess.php');
