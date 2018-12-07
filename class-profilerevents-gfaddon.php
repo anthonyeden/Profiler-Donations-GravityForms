@@ -7,20 +7,21 @@ class GFProfilerEvents extends GFProfilerCommon {
     protected $formid;
     protected $form;
     protected $gateways;
+    protected static $_instance = null;
 
     protected $apifield_endpoint = "/ProfilerPROG/api/api_events.cfm";
     protected $apifield_apikey = "api_user";
     protected $apifield_apipass = "api_pass";
 
     public static function get_instance() {
-        if (parent::$_instance == null) {
-            parent::$_instance = new GFProfilerEvents();
+        if (self::$_instance == null) {
+            self::$_instance = new GFProfilerEvents();
         }
         
-        parent::$_instance->form = parent::$_instance->get_current_form();
-        parent::$_instance->formid = parent::$_instance->form["id"];
+        self::$_instance->form = self::$_instance->get_current_form();
+        self::$_instance->formid = self::$_instance->form["id"];
         
-        return parent::$_instance;
+        return self::$_instance;
     }
 
     public function init() {

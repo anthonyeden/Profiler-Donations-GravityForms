@@ -5,7 +5,6 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $_full_path = __FILE__;
     protected $_url = "";
     protected $_title = "Profiler / Gravity Forms - Integration Feed";
-    protected static $_instance = null;
 
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
@@ -19,10 +18,10 @@ class GFProfilerCommon extends GFFeedAddOn {
         // This function adds all the feed setting fields we need to communicate with Profiler
         
         // Get lists of the various types of fields
-        $field_settings = self::$_instance->formFields();
-        $hiddenFields = self::$_instance->hiddenFields();
-        $checkboxRadioFields = self::$_instance->checkboxRadioFields();
-        $userdefinedfields = self::$_instance->userDefinedFields();
+        $field_settings = $this->formFields();
+        $hiddenFields = $this->hiddenFields();
+        $checkboxRadioFields = $this->checkboxRadioFields();
+        $userdefinedfields = $this->userDefinedFields();
         
         // All the fields to add to the feed:
         $fields = array();
@@ -134,8 +133,8 @@ class GFProfilerCommon extends GFFeedAddOn {
         $fields = $this->feed_settings_fields()[0]['fields'];
 
         foreach($fields as $field) {
-            if(isset($field['pf_apifield']) && self::$_instance->get_field_value($form, $entry, $feed['meta'][$field['name']]) != '') {
-                $postData[$field['pf_apifield']] = trim(self::$_instance->get_field_value($form, $entry, $feed['meta'][$field['name']]));
+            if(isset($field['pf_apifield']) && $this->get_field_value($form, $entry, $feed['meta'][$field['name']]) != '') {
+                $postData[$field['pf_apifield']] = trim($this->get_field_value($form, $entry, $feed['meta'][$field['name']]));
             }
         }
 
@@ -154,16 +153,10 @@ class GFProfilerCommon extends GFFeedAddOn {
         $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
         $entry[$feed['meta']['profiler_logs']] = htmlentities($logsToStore);
         GFAPI::update_entry($entry);
-        
-        if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
-            // Profiler failed. Send the failure email.
-            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profiler_erroremailaddress']);
-        }
 
-        // Store the Integration ID as meta so we can use it later
-        if(isset($pfResponse['dataArray']['dataset']['id']))
-            gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['dataset']['id'], $form_id);
-        
+        if(method_exists($this, 'process_feed_success')) {
+            $this->process_feed_success($feed, $entry, $form, $pfResponse);
+        }
     }
     
     public function feed_list_columns() {
