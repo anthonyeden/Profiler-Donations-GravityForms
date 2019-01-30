@@ -9,6 +9,9 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
     protected $apifield_endpoint = "";
+    protected $apifield_ipaddress = false;
+    protected $apifield_formurl = false;
+    protected $gffield_legacyname = "";
 
     public function init() {
         parent::init();
@@ -37,7 +40,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         $fields[] = array(
             "label" => 'Profiler Instance Domain Name',
             "type" => "text",
-            "name" => "profiler_instancedomainname",
+            "name" => "profiler".$this->gffield_legacyname."_instancedomainname",
             "required" => true,
             "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profiler.net.au/' is 'instance.profiler.net.au'",
         );
@@ -45,38 +48,61 @@ class GFProfilerCommon extends GFFeedAddOn {
         $fields[] = array(
             "label" => 'Profiler Database Name',
             "type" => "text",
-            "name" => "profiler_dbname",
+            "name" => "profiler".$this->gffield_legacyname."_dbname",
             "required" => true,
         );
         
         $fields[] = array(
             "label" => 'Profiler API Key',
             "type" => "text",
-            "name" => "profiler_apikey",
+            "name" => "profiler".$this->gffield_legacyname."_apikey",
             "required" => true,
         );
         
         $fields[] = array(
             "label" => 'Profiler API Password',
             "type" => "text",
-            "name" => "profiler_apipass",
+            "name" => "profiler".$this->gffield_legacyname."_apipass",
             "required" => true,
         );
 
         $fields[] = array(
             "label" => 'Profiler Errors Email Address',
             "type" => "text",
-            "name" => "profiler_erroremailaddress",
+            "name" => "profiler".$this->gffield_legacyname."_erroremailaddress",
             "required" => false,
         );
 
         // Add in all the fields required by the child feed class
         $fields = array_merge($fields, $this->feed_settings_fields_custom());
 
+        if($this->apifield_ipaddress == 'udf') {
+            // Client's IP Address - UDF Field
+            $fields[] = array(
+                "label" => 'UDF: Client IP Address',
+                "type" => "select",
+                "name" => "profiler".$this->gffield_legacyname."_userdefined_clientip",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
+                "choices" => $userdefinedfields,
+            );
+        }
+
+        if($this->apifield_formurl === true) {
+            $fields[] = array(
+                "label" => 'UDF: Form URL',
+                "type" => "select",
+                "name" => "profiler".$this->gffield_legacyname."_userdefined_formurl",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish the form's URL to be sent to.",
+                "choices" => $userdefinedfields,
+            );
+        }
+
         $fields[] = array(
             "label" => 'Profiler Logs',
             "type" => "select",
-            "name" => "profiler_logs",
+            "name" => "profiler".$this->gffield_legacyname."_logs",
             "tooltip" => 'Link it to a Hidden field that will hold Profiler Response Logs',
             "required" => false,
             "choices" => $hiddenFields
@@ -85,7 +111,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         $fields[] = array(
             "label" => 'SSL Mode',
             "type" => "select",
-            "name" => "profiler_sslmode",
+            "name" => "profiler".$this->gffield_legacyname."_sslmode",
             "required" => false,
             "choices" => array(
                 array(
@@ -122,12 +148,17 @@ class GFProfilerCommon extends GFFeedAddOn {
         // All the POST data for Profiler gets stored in this variable
         $postData = array();
 
-        $postData['DB'] = $feed['meta']['profiler_dbname'];
-        $postData[$this->apifield_apikey] = $feed['meta']['profiler_apikey'];
-        $postData[$this->apifield_apipass] = $feed['meta']['profiler_apipass'];
+        $postData['DB'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_dbname'];
+        $postData[$this->apifield_apikey] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apikey'];
+        $postData[$this->apifield_apipass] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apipass'];
+
+        if(empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'])) {
+            // Respect the setting from when we only accepted the first part of the domain name
+            $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'] . ".profiler.net.au";
+        }
 
         // Build the URL for this API call
-        $API_URL = "https://" . $feed['meta']['profiler_instancedomainname'] . $this->apifield_endpoint;
+        $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . $this->apifield_endpoint;
 
         // Work out GF/API field mappings
         $fields = $this->feed_settings_fields()[0]['fields'];
@@ -140,6 +171,20 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if(isset($postData['country'])) {
             $postData['country'] = $this->get_country_name($postData['country']);
+        }
+
+        if($this->apifield_ipaddress != false && $this->apifield_ipaddress != 'udf') {
+            // Client's IP Address - fixed field name
+            $postData[$this->apifield_ipaddress] = $this->get_client_ip_address();
+
+        } else if($this->apifield_ipaddress != false && $this->apifield_ipaddress == 'udf') {
+            // Client's IP Address - UDF field
+            $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_clientip']] = $this->get_client_ip_address();
+
+        }
+
+        if($this->apifield_formurl === true && !empty($feed['meta']['profiler_userdefined_clientip'])) {
+            $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_clientip']] = $entry['source_url'];
         }
 
         // Allow filtering this via the child class
@@ -155,7 +200,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
         $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
         $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
-        $entry[$feed['meta']['profiler_logs']] = htmlentities($logsToStore);
+        $entry[$feed['meta']['profiler'.$this->gffield_legacyname.'_logs']] = htmlentities($logsToStore);
         GFAPI::update_entry($entry);
 
         if(method_exists($this, 'process_feed_success')) {
@@ -279,6 +324,32 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         return $formfields;
     }
+
+    protected function selectFields() {
+        // Returns an array of checkbox and radio fields
+        
+        $form = $this->get_current_form();
+        $fields = $form['fields'];
+        
+        // An array holding all the hidden fields on the form - will be returned
+        $formfields = array(
+            array(
+                "value" => "",
+                "label" => ""
+            )
+        );
+        
+        foreach ($fields as $key => $field) {
+            if ($field['type'] == 'select') {
+                $formfields[] = array(
+                    "value" => $field['id'],
+                    "label" => $field['label']
+                );
+            }
+        }
+
+        return $formfields;
+    }
     
     protected function sendDataToProfiler($url, $profiler_query, $ssl_mode = "normal") {
         // Sends the donation and client data to Profiler via POST
@@ -364,6 +435,28 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         // Code not found, fall back to the supplied code...
         return $country_code;
+    }
+
+    private function get_client_ip_address() {
+        // Returns the client's IP Address
+
+        if (getenv('HTTP_CLIENT_IP')) {
+            $ipaddress = getenv('HTTP_CLIENT_IP');
+        } else if(getenv('HTTP_X_FORWARDED_FOR')) {
+            $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
+        } else if(getenv('HTTP_X_FORWARDED')) {
+            $ipaddress = getenv('HTTP_X_FORWARDED');
+        } else if(getenv('HTTP_FORWARDED_FOR')) {
+            $ipaddress = getenv('HTTP_FORWARDED_FOR');
+        } else if(getenv('HTTP_FORWARDED')) {
+            $ipaddress = getenv('HTTP_FORWARDED');
+        } else if(getenv('REMOTE_ADDR')) {
+            $ipaddress = getenv('REMOTE_ADDR');
+        } else {
+            $ipaddress = 'UNKNOWN';
+        }
+
+        return $ipaddress;
     }
 
 }
