@@ -138,6 +138,10 @@ class GFProfilerCommon extends GFFeedAddOn {
             }
         }
 
+        if(isset($postData['country'])) {
+            $postData['country'] = $this->get_country_name($postData['country']);
+        }
+
         // Allow filtering this via the child class
         if(method_exists($this, 'process_feed_custom')) {
             $postData = $this->process_feed_custom($feed, $entry, $form, $postData);
@@ -323,10 +327,10 @@ class GFProfilerCommon extends GFFeedAddOn {
             "cURL_SSL_Mode" => $ssl_mode,
         );
     }
-    
-    function sendFailureEmail($entry, $form, $pfResponse, $sendTo) {
+
+    public function sendFailureEmail($entry, $form, $pfResponse, $sendTo) {
         // Sends an alert email if integration with Profiler failed
-        
+
         if(!isset($pfResponse['dataArray']['error'])) {
             $pfResponse['dataArray']['error'] = "";
         }
@@ -338,15 +342,28 @@ class GFProfilerCommon extends GFFeedAddOn {
         $message .= "Profiler Error Message: " . $pfResponse['dataArray']['error'] . "\r\n";
         $message .= "\r\n\r\n";
         $message .= "This is the data that was sent to the Profiler API:\r\n";
-        
+
         foreach($pfResponse['dataSent'] as $key => $val) {
             if($key == "apikey" || $key == "apipass" || $key == "cardnumber" || $key == "api_user" || $key == "api_pass" || $key == $this->apifield_apikey || $key == $this->apifield_apipass) {
                 $val = "--REDACTED--";
             }
             $message .= $key . ": " . $val . "\r\n";
         }
-        
+
         wp_mail($sendTo, "Profiler API Failure", $message, $headers);
+    }
+
+    public function get_country_name($country_code) {
+        $countries = GF_Fields::get('address')->get_countries();
+
+        foreach($countries as $key => $val) {
+            if(strtoupper($key) == strtoupper($country_code)) {
+                return $val;
+            }
+        }
+
+        // Code not found, fall back to the supplied code...
+        return $country_code;
     }
 
 }

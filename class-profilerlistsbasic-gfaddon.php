@@ -47,6 +47,8 @@ class GFProfilerListsBasic extends GFProfilerCommon {
             );
         }
 
+        $fields = array();
+
         $fields[] = array(
             "label" => 'Client: First Name',
             "type" => "select",
