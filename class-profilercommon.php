@@ -184,7 +184,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         
     }
 
-    public function process_feed($feed, $entry, $form) {
+    public function process_feed($feed, $entry, $form, $fromValidatorProcessPFGateway = false) {
         // Processes the feed and prepares to send it to Profiler
 
         $form_id = $form["id"];
@@ -246,25 +246,34 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         // Allow filtering this via the child class
         if(method_exists($this, 'process_feed_custom')) {
-            $postData = $this->process_feed_custom($feed, $entry, $form, $postData);
+            $postData = $this->process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway);
+        }
+
+        if(isset($postData['apiurl_override'])) {
+            $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . $postData['apiurl_override'];
+            unset($postData['apiurl_override']);
         }
 
         // Send data to Profiler
         $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler'.$this->gffield_legacyname.'_sslmode']);
-        
-        // Save Profiler response data back to the form entry
-        $logsToStore = json_encode($pfResponse);
-        $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
-        $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
-        $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
-        $entry[$feed['meta']['profiler'.$this->gffield_legacyname.'_logs']] = htmlentities($logsToStore);
-        GFAPI::update_entry($entry);
 
-        if(method_exists($this, 'process_feed_success')) {
-            $this->process_feed_success($feed, $entry, $form, $pfResponse);
+        if($fromValidatorProcessPFGateway === false) {
+            // Save Profiler response data back to the form entry
+            $logsToStore = json_encode($pfResponse);
+            $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
+            $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
+            $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
+            $entry[$feed['meta']['profiler'.$this->gffield_legacyname.'_logs']] = htmlentities($logsToStore);
+            GFAPI::update_entry($entry);
+
+            if(method_exists($this, 'process_feed_success')) {
+                $this->process_feed_success($feed, $entry, $form, $pfResponse);
+            }   
+        } else {
+            return $pfResponse;
         }
     }
-    
+
     public function feed_list_columns() {
         // Returns columns to feed index page
         return array(
@@ -407,6 +416,46 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         return $formfields;
     }
+
+    protected function productFields() {
+        // Returns product fields and total field
+        
+        $form = $this->get_current_form();
+        $fields = $form['fields'];
+        
+        // An array holding all the product fields on the form - will be returned
+        $formfields = array(
+            array(
+                "value" => "",
+                "label" => ""
+            )
+        );
+        
+        $totalFieldExists = False;
+        
+        foreach ($fields as $key => $field) {
+            if ($field['type'] == 'product' || $field['type'] == 'profilerdonate' || $field['type'] == 'total') {
+                if ($field['type'] == 'total') {
+                    $totalFieldExists = True;
+                }
+                
+                $formfields[] = array(
+                    "value" => $field['id'],
+                    "label" => $field['label']
+                );
+            }
+        }
+        
+        //check if field total don't exist then add it
+        if ($totalFieldExists == False) {
+            $formfields[] = array(
+                "value" => "total",
+                "label" => "Total"
+            );
+        }
+        
+        return $formfields;
+    }
     
     protected function sendDataToProfiler($url, $profiler_query, $ssl_mode = "normal") {
         // Sends the donation and client data to Profiler via POST
@@ -479,6 +528,20 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         wp_mail($sendTo, "Profiler API Failure", $message, $headers);
+    }
+
+    protected function get_feed_instance($form, $entry) {
+        // Get all feeds and picks the first.
+        // Realistically we'll only have one active Profiler feed per form
+
+        $feeds = $this->get_feeds($form['id']);
+
+        foreach($feeds as $feed) {
+            if ($feed['is_active'] && $this->is_feed_condition_met($feed, $form, $entry)) {
+                return $feed;
+                break;
+            }
+        }
     }
 
     public function get_country_name($country_code) {
@@ -603,6 +666,157 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         return $formfields;
 
+    }
+
+    public function getTotalAmount($entry, $form = null) {
+        // Returns the total amount as a float
+        if(!isset($entry['payment_amount']) && $form !== null) {
+            return GFCommon::get_order_total($form, $entry);
+        }
+        
+        return (float)$entry['payment_amount'];
+        
+    }
+
+    public function getCardDetails($form) {
+        // Returns an array with all the credit card details
+        
+        $details = array(
+            "type" => false,
+            "number" => False,
+            "expiry_month" => False,
+            "expiry_year" => False,
+            "name" => False,
+            "usingSpecialCardField" => False,
+        );
+        
+        foreach ($form["fields"] as $fieldkey => $field) {
+            if ($field['type'] == 'creditcard' && !RGFormsModel::is_field_hidden($form, $field, array())) {
+                $details['number'] = rgpost('input_' . $field['id'] . '_1');
+                $details['type'] = $this->getCardTypeFromNumber($details['number']);
+                
+                $ccdate_array = rgpost('input_' . $field['id'] . '_2');
+                
+                $details['expiry_month'] = $ccdate_array[0];
+                if (strlen($details['expiry_month']) < 2) {
+                    $details['expiry_month'] = '0' . $details['expiry_month'];
+                }
+                
+                $details['expiry_year'] = $ccdate_array[1];
+                if (strlen($details['expiry_year']) <= 2) {
+                    $details['expiry_year'] = '20'.$ccdate_year;
+                }
+                
+                $details['name'] = rgpost('input_' . $field['id'] . '_5');
+            }
+        }
+        
+        if(isset($_POST['gf_pf_cardnum']) && !empty($_POST['gf_pf_cardnum'])) {
+            $details['number'] = $_POST['gf_pf_cardnum'];
+            $details['usingSpecialCardField'] = True;
+            $details['type'] = $this->getCardTypeFromNumber($details['number']);
+        }
+        
+        return $details;
+        
+    }
+    
+    public function getCardTypeFromNumber($number) {
+        // Atempts to parse the credit card number and return the card type (Visa, MC, etc.)
+        // From http://wephp.co/detect-credit-card-type-php/
+        
+        $number = preg_replace('/[^\d]/','', $number);
+        
+        if (preg_match('/^3[47][0-9]{13}$/', $number)) {
+            return 'Amex';
+        } elseif (preg_match('/^3(?:0[0-5]|[68][0-9])[0-9]{11}$/', $number)) {
+            return 'Diner';
+        } elseif (preg_match('/^6(?:011|5[0-9][0-9])[0-9]{12}$/', $number)) {
+            return 'Discover';
+        } elseif (preg_match('/^(?:2131|1800|35\d{3})\d{11}$/', $number)) {
+            return 'JCB';
+        } elseif (preg_match('/^5[1-5][0-9]{14}$/', $number)) {
+            return 'Master';
+        } elseif (preg_match('/^4[0-9]{12}(?:[0-9]{3})?$/', $number)) {
+            return 'Visa';
+        } else {
+            return 'Unknown';
+        }
+
+    }
+
+    protected function clean_amount($entry) {
+        // Clean up pricing amounts
+        
+        $entry = preg_replace("/\|(.*)/", '', $entry); // replace everything from the pipe symbol forward
+        if (strpos($entry, '.') === false) {
+            $entry .= ".00";
+        }
+        if (strpos($entry, '$') !== false) {
+            $startsAt = strpos($entry, "$") + strlen("$");
+            $endsAt = strlen($entry);
+            $amount = substr($entry, 0, $endsAt);
+            $amount = preg_replace("/[^0-9,.]/", "", $amount);
+        } else {
+            $amount = preg_replace("/[^0-9,.]/", "", sprintf("%.2f", $entry));
+        }
+
+        $amount = str_replace('.', '', $amount);
+        $amount = str_replace(',', '', $amount);
+        return $amount;
+    }
+
+    protected function creditcard_mask($number) {
+        // Returns a credit card with all but the first six and last four numbers masked
+        return implode("-", str_split(substr($number, 0, 6) . str_repeat("X", strlen($number) - 10) . substr($number, -4), 4));
+    }
+
+    protected function enable_creditcard($is_enabled) {
+        return true;
+    }
+
+    public function metabox_payments($meta_boxes, $entry, $form) {
+        // Allows the Payment Meta Box to be displayed on the 'Entries' screen
+        // From https://www.gravityhelp.com/documentation/article/gform_entry_detail_meta_boxes/
+        
+        if (!isset($meta_boxes['payment'])) {
+            $meta_boxes['payment'] = array(
+                'title'         => 'Payment Details',
+                'callback'      => array('GFEntryDetail', 'meta_box_payment_details'),
+                'context'       => 'side',
+                'callback_args' => array($entry, $form),
+            );
+        }
+
+        return $meta_boxes;
+    }
+
+    protected function gformEntryPostSave($entry, $form, $gatewaydata) {
+        // Log the successful gateway data
+
+        foreach ($gatewaydata as $key => $val) {
+            switch ($key) {
+                case 'payment_status':
+                case 'payment_date':
+                case 'payment_amount':
+                case 'transaction_id':
+                case 'transaction_type':
+                case 'payment_gateway':
+                case 'authcode':
+                    // update entry
+                    $entry[$key] = $val;
+                    break;
+
+                default:
+                    // update entry meta
+                    gform_update_meta($entry['id'], $key, $val);
+                    break;
+            }
+        }
+
+        GFAPI::update_entry($entry);
+
+        return $entry;
     }
 
 }

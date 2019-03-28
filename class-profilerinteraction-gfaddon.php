@@ -262,7 +262,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
         
     }
 
-    public function process_feed_custom($feed, $entry, $form, $postData) {
+    public function process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway = false) {
 
         $postData['method'] = "interaction";
         $postData['datatype'] = "INT";
