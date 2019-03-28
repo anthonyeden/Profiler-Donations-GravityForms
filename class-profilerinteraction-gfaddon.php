@@ -204,7 +204,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_interactiontype",
             "tooltip" => 'Select a Interaction Type ID/Code from Profiler',
             "required" => false,
-            "choices" => array_merge($hiddenFields, $checkboxradiofields, $selectfields),
+            "choices" => array_merge($hiddenFields, $checkboxRadioFields, $selectfields),
         );
         
         $fields[] = array(
@@ -222,7 +222,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_confidential",
             "tooltip" => 'Should this interaction be marked as Confidential in Profiler? Values must be Y or N.',
             "required" => false,
-            "choices" => array_merge($yesno_options, $hiddenFields, $checkboxradiofields, $selectfields),
+            "choices" => array_merge($yesno_options, $hiddenFields, $checkboxRadioFields, $selectfields),
         );
         
         $fields[] = array(
@@ -240,7 +240,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_alert",
             "tooltip" => 'Should this interaction be marked as an Alert in Profiler? Values must be Y or N.',
             "required" => false,
-            "choices" => array_merge($yesno_options, $hiddenFields, $checkboxradiofields, $selectfields),
+            "choices" => array_merge($yesno_options, $hiddenFields, $checkboxRadioFields, $selectfields),
         );
 
         return $fields;
