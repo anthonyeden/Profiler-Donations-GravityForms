@@ -271,6 +271,10 @@ class GFProfilerInteraction extends GFProfilerCommon {
         // Interaction Text
         $postData['comments'] = GFCommon::replace_variables($feed['meta']['profilerinteraction_interactiontext'], $form, $entry, false, true, false, 'text');
         $postData['comments'] = html_entity_decode($postData['comments']);
+        
+        // Only allow ASCII printable characters.
+        // This is a work-around to the API endpoint not allowing some characters
+        $postData['comments'] = preg_replace('/[^\x20-\x7E]/','', $postData['comments']);
 
         // Interaction Type ID
         $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_interactiontype']] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_interactiontype']);
