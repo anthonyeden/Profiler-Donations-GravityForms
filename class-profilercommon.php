@@ -12,6 +12,7 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $apifield_ipaddress = false;
     protected $apifield_formurl = false;
     protected $gffield_legacyname = "";
+    protected $supports_custom_fields = false;
 
     public function init() {
         parent::init();
@@ -20,11 +21,22 @@ class GFProfilerCommon extends GFFeedAddOn {
     public function feed_settings_fields() {
         // This function adds all the feed setting fields we need to communicate with Profiler
         
+        $feed = $this->get_current_feed();
+
         // Get lists of the various types of fields
         $field_settings = $this->formFields();
         $hiddenFields = $this->hiddenFields();
         $checkboxRadioFields = $this->checkboxRadioFields();
         $userdefinedfields = $this->userDefinedFields();
+        $customfields = $this->custom_fields_get();
+
+        $numbers = array();
+        for($i = 0; $i <= 99; $i++) {
+            $numbers[] = array(
+                "value" => $i,
+                "label" => $i
+            );
+        }
         
         // All the fields to add to the feed:
         $fields = array();
@@ -97,6 +109,39 @@ class GFProfilerCommon extends GFFeedAddOn {
                 "tooltip" => "Pick the Profiler User Defined Field you wish the form's URL to be sent to.",
                 "choices" => $userdefinedfields,
             );
+        }
+
+        if($this->supports_custom_fields === true) {
+            $fields[] = array(
+                "label" => 'Number of Custom Fields',
+                "type" => "select",
+                "name" => "profiler_customfields_count",
+                "required" => false,
+                "tooltip" => "How many custom fields do you want to send back to Profiler?",
+                "choices" => $numbers,
+            );
+
+            for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
+                // Loop over custom fields
+
+                $fields[] = array(
+                    "label" => 'Custom Field #'.$i.': Profiler Field',
+                    "type" => "select",
+                    "name" => "profiler_customfield_".$i."_pffield",
+                    "required" => false,
+                    "tooltip" => "Pick the field in Profiler you wish to use",
+                    "choices" => $customfields,
+                );
+
+                $fields[] = array(
+                    "label" => 'Custom Field #'.$i.': Gravity Forms Field',
+                    "type" => "select",
+                    "name" => "profiler_customfield_".$i."_gffield",
+                    "required" => false,
+                    "tooltip" => "Pick the field in Gravity Forms you wish to use",
+                    "choices" => $field_settings,
+                );
+            }
         }
 
         $fields[] = array(
@@ -185,6 +230,13 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if($this->apifield_formurl === true && !empty($feed['meta']['profiler_userdefined_clientip'])) {
             $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_clientip']] = $entry['source_url'];
+        }
+
+        // Custom Fields
+        if($this->supports_custom_fields === true && !empty($feed['meta']['profiler_customfields_count'])) {
+            for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
+                $postData["custom_" . $feed['meta']["profiler_customfield_".$i."_pffield"]] = trim($this->get_field_value($form, $entry, $feed['meta']["profiler_customfield_".$i."_gffield"]));
+            }
         }
 
         // Allow filtering this via the child class
@@ -457,6 +509,95 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         return $ipaddress;
+    }
+
+    public function save_feed_settings($feed_id, $form_id, $settings) {
+        // We override this function in order to trigger an update of the custom fields cache
+        $result = parent::save_feed_settings($feed_id, $form_id, $settings);
+
+        $this->custom_fields_cache();
+
+        return $result;
+
+    }
+
+    private function custom_fields_cache() {
+        // Call this function to update the cached list of custom fields
+
+        if($this->supports_custom_fields !== true) {
+            return false;
+        }
+
+        // Data from Profiler is stored in here
+        $data = array();
+
+        $feed = $this->get_current_feed();
+
+        // All the POST data for Profiler gets stored in this variable
+        $postData = array();
+
+        $postData['DB'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_dbname'];
+        $postData[$this->apifield_apikey] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apikey'];
+        $postData[$this->apifield_apipass] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apipass'];
+
+        if(empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'])) {
+            // Respect the setting from when we only accepted the first part of the domain name
+            $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'] . ".profiler.net.au";
+        }
+
+        if(empty($postData['DB']) || empty($postData[$this->apifield_apikey]) || empty($postData[$this->apifield_apipass]) || empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'])) {
+            return false;
+        }
+
+        // Build the URL for this API call
+        $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . '/ProfilerAPI/system/customfields/';
+
+        // Send request to Profiler
+        $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler_sslmode']);
+
+        // Loop over all the returned fields and pop them into the array of data to be saved
+        if(isset($pfResponse['dataArray']['field']) && count($pfResponse['dataArray']['field']) > 0) {
+            foreach($pfResponse['dataArray']['field'] as $field) {
+                $data[] = array(
+                    'id' => $field['id'],
+                    'field_name' => $field['field_name'],
+                    'friendly_name' => $field['friendly_name'],
+                    'field_category' => $field['field_category'],
+                    'sortorder' => $field['sortorder'],
+                );
+            }
+
+            // Update the cached data
+            update_option('profilergf_'.$this->get_current_feed_id().'_customfields', $data);
+        }
+
+    }
+
+    protected function custom_fields_get() {
+        // Returns a list of all custom fields (from the cache)
+
+        if($this->supports_custom_fields !== true) {
+            return false;
+        }
+
+        $fields = get_option('profilergf_'.$this->get_current_feed_id().'_customfields', array());
+
+        $formfields = array(
+            array(
+                "value" => "",
+                "label" => ""
+            )
+        );
+
+        foreach($fields as $field) {
+            $formfields[] = array(
+                "value" => $field['id'],
+                "label" => $field['field_name'] . ": " . $field['friendly_name'],
+            );
+        }
+
+        return $formfields;
+
     }
 
 }
