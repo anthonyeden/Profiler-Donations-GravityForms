@@ -202,6 +202,11 @@ class GFProfilerCommon extends GFFeedAddOn {
             $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'] . ".profiler.net.au";
         }
 
+        if(empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_serveraddress'])) {
+            $parse = parse_url($feed['meta']['profiler'.$this->gffield_legacyname.'_serveraddress']);
+            $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $parse['host'];
+        }
+
         // Build the URL for this API call
         $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . $this->apifield_endpoint;
 
@@ -245,7 +250,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         // Send data to Profiler
-        $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler_sslmode']);
+        $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler'.$this->gffield_legacyname.'_sslmode']);
         
         // Save Profiler response data back to the form entry
         $logsToStore = json_encode($pfResponse);
