@@ -43,6 +43,21 @@ class GFProfilerInteraction extends GFProfilerCommon {
         $userdefinedfields = self::$_instance->userDefinedFields();
         $selectfields = self::$_instance->selectFields();
 
+        $yesno_options = array(
+            array(
+                "value" => "",
+                "label" => ""
+            ),
+            array(
+                "value" => "false",
+                "label" => "False"
+            ),
+            array(
+                "value" => "true",
+                "label" => "True"
+            )
+        );
+
         $mailingnumbers = array();
         for($i = 0; $i <= 99; $i++) {
             $mailingnumbers[] = array(
