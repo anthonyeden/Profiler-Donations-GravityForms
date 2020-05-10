@@ -9,7 +9,7 @@ class GFProfilerDonate extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerPROG/api/api_call.cfm";
+    protected $apifield_endpoint = "/ProfilerAPI/Legacy/";
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
     protected $apifield_ipaddress = 'udf';
@@ -529,7 +529,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($useAsGateway == true) {
             // Profiler processes this payment
             $postData['method'] = "gateway.payment";
-            $postData['apiurl_override'] = "/ProfilerPROG/api/v2/payments/";
+            $postData['apiurl_override'] = "/ProfilerAPI/payments/";
         } else {
             // Profiler will just record integration data
             $postData['method'] = "integration.send";

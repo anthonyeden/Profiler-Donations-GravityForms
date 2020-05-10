@@ -9,7 +9,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerPROG/api/api_oldon.cfm";
+    protected $apifield_endpoint = "/ProfilerAPI/LegacyPost/";
     protected $apifield_apikey = "api_user";
     protected $apifield_apipass = "api_pass";
     protected $apifield_ipaddress = 'udf';
