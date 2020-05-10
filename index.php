@@ -72,6 +72,15 @@ class ProfilerDonation_GF_Launch {
                 session_start();
             }
         }
+
+        // Warning if the SimpleXML Functions aren't available on this system
+        add_action('admin_notices', function() {
+            if(!function_exists('simplexml_load_string')) {
+                echo '<div class="notice notice-warning">
+                    <p>SimpleXML Module is not found in PHP. Your Gravity Forms + Profiler integration will not work. Please install the PHP XML package.</p>
+                </div>';
+            }
+        });
     }
 }
 
