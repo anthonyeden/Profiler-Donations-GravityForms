@@ -42,6 +42,13 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         // Filter to ensure the Payment Meta-Box is displayed
         add_filter("gform_entry_detail_meta_boxes",     array($this, "metabox_payments"), 10, 3);
+
+        // Allow processing this feed after PayPal payments have been made
+        $this->add_delayed_payment_support(
+            array(
+                'option_label' => 'Send data to Profiler only when payment is received.',
+            )
+        );
     }
     
     public function feed_settings_fields_custom() {
@@ -460,6 +467,24 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
+            "label" => 'UDF: Payment Gateway ID Used',
+            "type" => "select",
+            "name" => "profilerdonation_userdefined_paymentgatewayidused",
+            "required" => false,
+            "tooltip" => "Pick the Profiler User Defined Field you wish the payment gateway ID to be sent to",
+            "choices" => $userdefinedfields,
+        );
+
+        $fields[] = array(
+            "label" => 'Payment Gateway ID Used',
+            "type" => "select",
+            "name" => "profilerdonation_paymentgatewayidused",
+            "required" => false,
+            "tooltip" => "Pick the Profiler Gateway ID used for this transaction (if you are conditionally using multiple gateways in Gravity Forms)",
+            "choices" => $field_settings
+        );
+
+        $fields[] = array(
             "label" => 'Number of Mailing Lists',
             "type" => "select",
             "name" => "profilerdonation_mailinglist_count",
@@ -561,20 +586,27 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_receiptname']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_receiptname']);
         }
 
+        if($feed['meta']['profilerdonation_userdefined_paymentgatewayidused'] !== "") {
+            // Payment Gateway ID Used
+            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentgatewayidused']);
+        }
+
+
+        // Source codes
+        if(isset($feed['meta']['profilerdonation_sourcecodemode']) && $feed['meta']['profilerdonation_sourcecodemode'] !== "normal") {
+            // The source code is a value of a specified field
+            $donationSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_sourcecodemode']);
+
+        } else {
+            // Regular behaviour
+            $donationSourceCode = $this->getDonationCode($feed, 'sourcecode', $form);
+        }
+
+        $postData['sourcecode'] = $donationSourceCode;
+
         if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
             // Donation Source Code
-
-            if(isset($feed['meta']['profilerdonation_sourcecodemode']) && $feed['meta']['profilerdonation_sourcecodemode'] !== "normal") {
-                // The source code is a value of a specified field
-                $donationSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_sourcecodemode']);
-
-            } else {
-                // Regular behaviour
-                $donationSourceCode = $this->getDonationCode($feed, 'sourcecode', $form);
-            }
-
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $donationSourceCode;
-            $postData['sourcecode'] = $donationSourceCode;
         }
         
         if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
@@ -599,7 +631,7 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         if($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "" && $feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {
             // Client Acqusition code
-            $donationSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientacquisitioncode']);
+            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientacquisitioncode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientacquisitioncode']);
 
         } else if ($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "") {
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientacquisitioncode']] = $this->getDonationCode($feed, 'clientacquisitioncode', $form);
