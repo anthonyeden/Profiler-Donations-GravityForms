@@ -116,7 +116,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_paymentmethod",
             "required" => false,
             "choices" => $field_settings,
-            "tooltip" => "The value of this field must be set to 'creditcard' or 'bankdebit'. If this field isn't set, or an invalid value is passed, we assume it's a credit card."
+            "tooltip" => "The value of this field must be set to 'creditcard', 'bankdebit', or 'paypal'. If this field isn't set, or an invalid value is passed, we assume it's a credit card."
         );
         
         $fields[] = array(
@@ -702,11 +702,15 @@ class GFProfilerDonate extends GFProfilerCommon {
             unset($postData['cardtype']);
             unset($postData['cardnumber']);
             unset($postData['cardexpiry']);
-            
+
             $postData['bankaccountname'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountname"]);
             $postData['bankbsb'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_bsb"]);
             $postData['bankaccountnumber'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountnumber"]);
             
+        } elseif($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "paypal") {
+            // PayPal within Profiler requires this value in the 'maskcard' field
+            $postData['maskcard'] = 'paypal';
+
         } elseif($useAsGateway == false) {
             // Credit Card
             // This feed only processes on success - so we assume an approved transaction
@@ -748,7 +752,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             return $gform_validation_result;
         }
 
-        if($feed['meta']['profilerdonation_useasgateway'] !== "true" || $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
+        if($feed['meta']['profilerdonation_useasgateway'] !== "true" || $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit" || $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "paypal") {
             // If we're not using Profiler as a gateway, we don't need to continue validation here.
             return $gform_validation_result;
         }
