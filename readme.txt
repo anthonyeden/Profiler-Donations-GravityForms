@@ -1,18 +1,18 @@
-=== Profiler Donations for Gravity Forms ===
+=== Profiler Integration for Gravity Forms ===
 Contributors: anthonyeden
-Tags: gravity-forms, fundraising, crm, donation
-Requires at least: 4.6
-Tested up to: 4.9
+Tags: gravity-forms, fundraising, crm, donation, profiler
+Requires at least: 5.0
+Tested up to: 5.4.1
 Stable tag: trunk
-Requires PHP: 5.6.0
+Requires PHP: 7.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A Wordpress plugin to integrate your Gravity Forms with Profile IMS.
+A Wordpress plugin to integrate your Gravity Forms with Profiler CRM.
 
 == Description ==
 
-A Wordpress plugin to integrate your Gravity Forms with Profile IMS. You can send Donations and Interactions directly to Profiler from your Gravity Form. You can also use Profiler as a Payment Gateway!
+A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can send Donations and Interactions directly to Profiler from your Gravity Form. You can also use Profiler as a Payment Gateway!
 
 
 == Installation ==
@@ -21,6 +21,16 @@ A Wordpress plugin to integrate your Gravity Forms with Profile IMS. You can sen
 2. Configure the plugin, and Profiler, based on these instructions: https://github.com/anthonyeden/Profiler-Donations-GravityForms/blob/master/README.md
 
 == Changelog ==
+
+= 2.0.0 =
+
+* CAUTION: This is a major update. Please take a backup before upgrading, and test your forms thoroughly after performing the update. If you want to wait until after your EOFY to apply this update, we won't mind. You must be running Profiler 9 to use this new version.
+* Support for the new Profiler 9 API endpoints
+* Refactor the feeds so they are easier to test & maintain
+* Add support for PayPal Standard Addon in Gravity Forms
+* Add List feeds
+* Check the XML module is installed in PHP, and warn if it is missing
+* When using Profiler as a gateway, send the CCV field
 
 = 1.4.0 =
 
