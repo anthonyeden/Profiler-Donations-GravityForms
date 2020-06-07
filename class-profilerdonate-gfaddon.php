@@ -580,7 +580,8 @@ class GFProfilerDonate extends GFProfilerCommon {
         $postData['cardnumber'] = $cardDetails['number'];
         $postData['maskcard'] = $this->creditcard_mask($cardDetails['number']);
         $postData['cardexpiry'] = $cardDetails['expiry_month'] . " " . $cardDetails['expiry_year'];
-            
+        $postData['ccv'] = $cardDetails['ccv'];
+
         if($feed['meta']['profilerdonation_userdefined_receiptname'] !== "") {
             // Receipt Name
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_receiptname']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_receiptname']);
@@ -687,10 +688,11 @@ class GFProfilerDonate extends GFProfilerCommon {
             // Once-off donation (not using Profiler as the gateway)
             $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
             $postData['cardexpiry'] = date("m") . " " . date("Y");
+            $postData['ccv'] = "";
             unset($postData['pledgeamount']);
             unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
             unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
-            
+
         } else {
             // Store the donation type
             gform_add_meta($entry["id"], "profiler_type", "onceoff", $form_id);
@@ -701,6 +703,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['status'] = "Pending";
             unset($postData['cardtype']);
             unset($postData['cardnumber']);
+            unset($postData['ccv']);
             unset($postData['cardexpiry']);
 
             $postData['bankaccountname'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountname"]);

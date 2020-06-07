@@ -686,6 +686,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             "number" => False,
             "expiry_month" => False,
             "expiry_year" => False,
+            "ccv" => false,
             "name" => False,
             "usingSpecialCardField" => False,
         );
@@ -708,6 +709,7 @@ class GFProfilerCommon extends GFFeedAddOn {
                 }
                 
                 $details['name'] = rgpost('input_' . $field['id'] . '_5');
+                $details['ccv'] = rgpost('input_' . $field['id'] . '_3');
             }
         }
         
