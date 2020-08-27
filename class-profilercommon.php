@@ -233,8 +233,8 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         }
 
-        if($this->apifield_formurl === true && !empty($feed['meta']['profiler_userdefined_clientip'])) {
-            $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_clientip']] = $entry['source_url'];
+        if($this->apifield_formurl === true && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl'])) {
+            $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl']] = $entry['source_url'];
         }
 
         // Custom Fields
