@@ -29,7 +29,7 @@ add_action('gform_loaded', array('ProfilerDonation_GF_Launch', 'ProfilerDonation
 
 class ProfilerDonation_GF_Launch {
     public static function ProfilerDonation_load() {
-        
+
         if (!class_exists('GFForms') || !method_exists('GFForms', 'include_payment_addon_framework')) {
             return;
         }
@@ -58,11 +58,14 @@ class ProfilerDonation_GF_Launch {
 
         //require_once('class-profilerevents-gfaddon.php');
         //GFAddOn::register('GFProfilerEvents');
-        
+
         // Include some random helper functions
-        require_once('shortcodes.php');
-        require_once('states_australia.php');
-        require_once('cardprocess.php');
+        require_once(plugin_dir_path(__FILE__) . '/shortcodes.php');
+        require_once(plugin_dir_path(__FILE__) . '/states_australia.php');
+        require_once(plugin_dir_path(__FILE__) . '/cardprocess.php');
+
+        // Feature to allow importing user accounts from Profiler
+        require_once(plugin_dir_path(__FILE__) . '/users.php');
         
         if(isset($_POST['gform_submit'])) {
             // If we're receiving a Gravity Form submission, ensure the session is started
