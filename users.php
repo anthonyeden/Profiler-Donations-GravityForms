@@ -289,6 +289,15 @@ class ProfilerUsers {
         );
     }
 
+    public function cron_schedules($schedules) {
+        $schedules['fifteen_minutes'] = array(
+            'interval' => 900,
+            'display'  => esc_html__('Every Fifteen Minutes'),
+        );
+     
+        return $schedules;
+    }
+
 }
 
 $ProfilerUsersObj = New ProfilerUsers();
