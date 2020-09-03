@@ -65,7 +65,7 @@ class ProfilerDonation_GF_Launch {
         require_once(plugin_dir_path(__FILE__) . '/cardprocess.php');
 
         // Feature to allow importing user accounts from Profiler
-        require_once(plugin_dir_path(__FILE__) . '/users.php');
+        require_once(plugin_dir_path(__FILE__) . '/sync_users.php');
         
         if(isset($_POST['gform_submit'])) {
             // If we're receiving a Gravity Form submission, ensure the session is started
