@@ -399,15 +399,15 @@ class ProfilerOrgType {
                 'orderby' => 'ID',
                 'order' => 'ASC',
                 'post_status' => 'publish',
-                'meta_query' => array(
+                'meta_query' => array(array(
                     'key' => 'profiler_client_id',
                     'value' => $found_client_ids,
                     'compare' => 'NOT IN',
-                )
+                ))
             ));
-            $purge_posts = $purge_posts_query->get_post();
+            $purge_posts = $purge_posts_query->get_posts();
             $count_purged = 0;
-            foreach($purge_post as $this_post) {
+            foreach($purge_posts as $this_post) {
                 $draft_post = wp_update_post(array(
                     'ID' => $this_post->ID,
                     'post_status' => 'draft',
@@ -422,7 +422,7 @@ class ProfilerOrgType {
             }
 
             if($count_purged > 0) {
-                $this->log('Set ' . $this_post->ID . ' posts to draft.');
+                $this->log('Set ' . $count_purged . ' posts to draft.');
             }
         }
 
