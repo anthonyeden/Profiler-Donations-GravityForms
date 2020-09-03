@@ -11,6 +11,10 @@ class ProfilerOrgType {
             "title" => "Profiler Domain",
             "type" => "text",
         ),
+        "pf_database" => array(
+            "title" => "Profiler Database (e.g. pf_demo)",
+            "type" => "text",
+        ),
         "orgtype_list" => array(
             "title" => "List of OrgType IDs (one per line)",
             "type" => "textarea",
@@ -48,7 +52,7 @@ class ProfilerOrgType {
                 'hierarchical'          => false,
                 'public'                => true,
                 'show_ui'               => true,
-                'show_in_menu'          => false,
+                'show_in_menu'          => true,
                 'menu_position'         => 5,
                 'show_in_admin_bar'     => false,
                 'show_in_nav_menus'     => true,
@@ -389,6 +393,21 @@ class ProfilerOrgType {
                     }
                 }
 
+                // Download and attach the logo if one is set
+                if(isset($org['logo']) && !empty($org['logo'])) {
+                    $logo_url = $org['logo'];
+                } elseif(isset($org['clientlogo']) && !empty($org['clientlogo'])) {
+                    $logo_url = 'https://'.$options['pf_domain'].'/Profiler/Content/'.$options['pf_database'].'/Attachments/' . $org['clientlogo'];
+                } else {
+                    $logo_url = '';
+                }
+
+                if(!empty($logo_url)) {
+                    $existing_thumbnail_id = get_post_thumbnail_id($post_id);
+                    $attachment_id = $this->image_ingest($logo_url, $post_id, $existing_thumbnail_id);
+                    set_post_thumbnail($post_id, $attachment_id);
+                }
+
                 $count++;
             }
 
@@ -506,6 +525,63 @@ class ProfilerOrgType {
             "cURLError" => $cURL_error,
             "cURL_SSL_Mode" => $ssl_mode,
         );
+    }
+
+    protected function image_ingest($url, $parent_post_id = null, $replace_existing_id = null) {
+        // Download a file from a URL, and add it to the media library
+    
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+    
+        // Get the source file
+        $image_data = file_get_contents($url);
+        $filename = basename($url);
+    
+        if(strpos($filename, '?') !== false) {
+            $filename = substr($filename, 0, strpos($filename, '?'));
+        }
+    
+        if($replace_existing_id !== null && !empty($replace_existing_id) && $replace_existing_id !== false) {
+            // Possibly replace an existing image file, if the filename matches exactly
+            $existing_url = wp_get_attachment_url($replace_existing_id);
+            $filename_existing = basename($existing_url);
+            if(strpos($filename_existing, '?') !== false) {
+                $filename_existing = substr($filename_existing, 0, strpos($filename_existing, '?'));
+            }
+            if($filename === $filename_existing) {
+                // Trigger a replacement, rather than a new upload
+                $filenamefull_existing = get_attached_file($replace_existing_id, true);
+                file_put_contents($filenamefull_existing, $image_data);
+    
+                wp_generate_attachment_metadata($replace_existing_id, $filenamefull_existing);
+                return $replace_existing_id;
+            }
+        }
+    
+        $upload_dir = wp_upload_dir();
+    
+        if(wp_mkdir_p($upload_dir['path'])) {
+            $file = $upload_dir['path'] . '/' . $filename;
+        } else {
+            $file = $upload_dir['basedir'] . '/' . $filename;
+        }
+    
+        file_put_contents($file, $image_data);
+    
+        $wp_filetype = wp_check_filetype($filename, null);
+    
+        $attachment = array(
+            'post_mime_type' => $wp_filetype['type'],
+            'post_title' => sanitize_file_name($filename),
+            'post_content' => '',
+            'post_status' => 'inherit'
+        );
+    
+        $attach_id = wp_insert_attachment($attachment, $file, $parent_post_id);
+        
+        $attach_data = wp_generate_attachment_metadata($attach_id, $file);
+        wp_update_attachment_metadata($attach_id, $attach_data);
+    
+        return $attach_id;
     }
 
 }
