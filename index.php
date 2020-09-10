@@ -59,6 +59,9 @@ class ProfilerDonation_GF_Launch {
         require_once('class-profilermembership-gfaddon.php');
         GFAddOn::register('GFProfilerMembership');
 
+        require_once('class-profilerupdate-gfaddon.php');
+        GFAddOn::register('GFProfilerUpdate');
+
         //require_once('class-profilerevents-gfaddon.php');
         //GFAddOn::register('GFProfilerEvents');
 
