@@ -37,9 +37,20 @@ class GFProfilerMembership extends GFProfilerDonate {
 
         $postData = parent::process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway, true);
 
+        if($feed['meta']['profilerdonation_useasgateway'] == "true" && $fromValidatorProcessPFGateway == true) {
+            $useAsGateway = true;
+
+        } elseif($feed['meta']['profilerdonation_useasgateway'] !== "true" && $fromValidatorProcessPFGateway == true) {
+            // This shouldn't happen. Let's catch it just in case.
+            return false;
+
+        } else {
+            $useAsGateway = false;
+
+        }
+
         if($useAsGateway != true) {
             // Profiler processes this payment
-            $postData['method'] = "integration.send";
             $postData['datatype'] = "MEM";
         }
 
