@@ -530,7 +530,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         
     }
 
-    public function process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway = false) {
+    public function process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway = false, $forceSendCard = false) {
         // Processes the feed and prepares to send it to Profiler
         // This can either do a gateway payment, or just an integration
 
@@ -686,9 +686,13 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         } elseif($useAsGateway == false) {
             // Once-off donation (not using Profiler as the gateway)
-            $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
-            $postData['cardexpiry'] = date("m") . " " . date("Y");
-            $postData['ccv'] = "";
+            
+            if($forceSendCard == false) {
+                $postData['cardnumber'] = "4444333322221111"; //PF expects a card number and expiry even for once-offs which have already been processed
+                $postData['cardexpiry'] = date("m") . " " . date("Y");
+                $postData['ccv'] = "";
+            }
+
             unset($postData['pledgeamount']);
             unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
             unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
