@@ -30,6 +30,7 @@ class ProfilerOrgType {
         add_action('admin_init', array($this, 'settings_init'));
         add_action('profiler_orgtype_cron', array($this, 'job'));
         add_filter('init', array($this, 'init'));
+        add_shortcode('profiler_directory', array($this, 'sc_directory'));
     }
 
     public function activate() {
@@ -52,7 +53,7 @@ class ProfilerOrgType {
                 'hierarchical'          => false,
                 'public'                => true,
                 'show_ui'               => true,
-                'show_in_menu'          => true,
+                'show_in_menu'          => false,
                 'menu_position'         => 5,
                 'show_in_admin_bar'     => false,
                 'show_in_nav_menus'     => true,
@@ -333,7 +334,7 @@ class ProfilerOrgType {
                 }
 
                 // Find body text
-                if(isset($options['orgtype_'.$OrgType.'_field_bodytext']) && isset($org[$options['orgtype_'.$OrgType.'_field_bodytext']])) {
+                if(isset($options['orgtype_'.$OrgType.'_field_bodytext']) && isset($org[$options['orgtype_'.$OrgType.'_field_bodytext']]) && !is_array($org[$options['orgtype_'.$OrgType.'_field_bodytext']])) {
                     $body_text = $org[$options['orgtype_'.$OrgType.'_field_bodytext']];
                 } else {
                     $body_text = '';
@@ -384,10 +385,13 @@ class ProfilerOrgType {
                     foreach(explode("\n", $options['orgtype_'.$OrgType.'_metamapping']) as $line) {
 
                         $parts = explode(":", $line);
-                        $apifield = $parts[0];
-                        $metakey = $parts[1];
+                        $apifield = trim($parts[0]);
+                        $metakey = trim($parts[1]);
 
                         if(isset($org[$apifield])) {
+                            if(is_array($org[$apifield])) {
+                                $org[$apifield] = '';
+                            }
                             update_post_meta($post_id, $metakey, $org[$apifield]);
                         }
                     }
@@ -529,17 +533,17 @@ class ProfilerOrgType {
 
     protected function image_ingest($url, $parent_post_id = null, $replace_existing_id = null) {
         // Download a file from a URL, and add it to the media library
-    
+
         require_once(ABSPATH . 'wp-admin/includes/image.php');
-    
+
         // Get the source file
         $image_data = file_get_contents($url);
         $filename = basename($url);
-    
+
         if(strpos($filename, '?') !== false) {
             $filename = substr($filename, 0, strpos($filename, '?'));
         }
-    
+
         if($replace_existing_id !== null && !empty($replace_existing_id) && $replace_existing_id !== false) {
             // Possibly replace an existing image file, if the filename matches exactly
             $existing_url = wp_get_attachment_url($replace_existing_id);
@@ -551,37 +555,141 @@ class ProfilerOrgType {
                 // Trigger a replacement, rather than a new upload
                 $filenamefull_existing = get_attached_file($replace_existing_id, true);
                 file_put_contents($filenamefull_existing, $image_data);
-    
+
                 wp_generate_attachment_metadata($replace_existing_id, $filenamefull_existing);
                 return $replace_existing_id;
             }
         }
-    
+
         $upload_dir = wp_upload_dir();
-    
+
         if(wp_mkdir_p($upload_dir['path'])) {
             $file = $upload_dir['path'] . '/' . $filename;
         } else {
             $file = $upload_dir['basedir'] . '/' . $filename;
         }
-    
+
         file_put_contents($file, $image_data);
-    
+
         $wp_filetype = wp_check_filetype($filename, null);
-    
+
         $attachment = array(
             'post_mime_type' => $wp_filetype['type'],
             'post_title' => sanitize_file_name($filename),
             'post_content' => '',
             'post_status' => 'inherit'
         );
-    
+
         $attach_id = wp_insert_attachment($attachment, $file, $parent_post_id);
-        
+
         $attach_data = wp_generate_attachment_metadata($attach_id, $file);
         wp_update_attachment_metadata($attach_id, $attach_data);
-    
+
         return $attach_id;
+    }
+
+    public function sc_directory($atts) {
+        // Simple HTML output of the directory
+
+        global $post;
+        $page_url = get_permalink($post);
+        $page_url_query_string = parse_url($page_url, PHP_URL_QUERY);
+
+        $a = shortcode_atts( array(
+            'orgtype' => '',
+        ), $atts);
+
+        $options = get_option($this->settings_prefix . 'settings');
+
+        if(!isset($options['orgtype_' . $a['orgtype'] . '_cpt'])) {
+            echo '<p><strong>OrgType not found!</strong></p>';
+            return;
+        }
+
+        $cpt = $options['orgtype_' . $a['orgtype'] . '_cpt'];
+
+        $posts_query = new WP_Query(array(
+            'post_type' => $cpt,
+            'posts_per_page' => -1,
+            'orderby' => 'post_title',
+            'order' => 'ASC',
+            'post_status' => array('publish'),
+        ));
+        $posts = $posts_query->get_posts();
+
+        if(!is_array($posts) || count($posts) == 0) {
+            echo '<p><strong>Sorry, we could not find any entries in the directory.</strong></p>';
+            return;
+        }
+
+        echo '<div class="profiler-directory">';
+
+        foreach($posts as $this_post) {
+
+            if(isset($_GET['orgid']) && $_GET['orgid'] != $this_post->ID) {
+                continue;
+            }
+
+            echo '<div class="profiler-directory-entry directory-'.$a['orgtype'].' directory-entry-'.$this_post->ID.' '.(isset($_GET['orgid']) ? 'directory-individual' : '').'">';
+
+            // Work out the unique URL
+            if ($page_url_query_string) {
+                $individual_url = $page_url_query_string . '&orgid=' . $this_post->ID;
+            } else {
+                $individual_url = $page_url_query_string . '?orgid=' . $this_post->ID;
+            }
+
+            // Image
+            $logo = get_the_post_thumbnail($this_post, 'full');
+            if(!empty($logo)) {
+                echo '<a href="'.$individual_url.'">';
+                echo $logo;
+                echo '</a>';
+            }
+
+            // Item title
+            echo '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
+
+            // Meta fields
+            $meta_fields = array();
+            foreach(array('address', 'suburb', 'state', 'postcode', 'website', 'phone') as $meta_field_name) {
+                $meta_value = get_metadata('post', $this_post->ID, $meta_field_name, true);
+                if(empty($meta_value)) {
+                    continue;
+                }
+                $meta_fields[$meta_field_name] = trim($meta_value);
+            }
+
+            if(isset($meta_fields['address']) || isset($meta_fields['suburb'])) {
+                echo '<p>';
+                if(isset($meta_fields['address'])) echo $meta_fields['address'];
+                if(isset($meta_fields['suburb'])) echo (isset($meta_fields['address']) ? '<br />' : '') . $meta_fields['suburb'];
+                if(isset($meta_fields['state'])) echo '<br />' . $meta_fields['state'];
+                if(isset($meta_fields['postcode'])) echo ' ' . $meta_fields['postcode'];
+                echo '</p>';
+            }
+
+            if(isset($meta_fields['website'])) {
+                if(substr($meta_fields['website'], 0, 4) !== 'http') {
+                    $meta_fields['website'] = 'http://' . $meta_fields['website'];
+                }
+                echo '<p><a href="" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
+            }
+
+            if(isset($meta_fields['phone'])) {
+                echo '<p>'.$meta_fields['phone'].'</p>';
+            }
+
+            if(isset($_GET['orgid'])) {
+                echo apply_filters('the_content', $this_post->post_content);
+            }
+
+
+            echo '</div>';
+        }
+
+        echo '</div>';
+
     }
 
 }
