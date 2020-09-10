@@ -601,9 +601,11 @@ class ProfilerOrgType {
 
         $options = get_option($this->settings_prefix . 'settings');
 
+        $html = '';
+
         if(!isset($options['orgtype_' . $a['orgtype'] . '_cpt'])) {
-            echo '<p><strong>OrgType not found!</strong></p>';
-            return;
+            $html .= '<p><strong>OrgType not found!</strong></p>';
+            return $html;
         }
 
         $cpt = $options['orgtype_' . $a['orgtype'] . '_cpt'];
@@ -618,11 +620,11 @@ class ProfilerOrgType {
         $posts = $posts_query->get_posts();
 
         if(!is_array($posts) || count($posts) == 0) {
-            echo '<p><strong>Sorry, we could not find any entries in the directory.</strong></p>';
-            return;
+            $html .= '<p><strong>Sorry, we could not find any entries in the directory.</strong></p>';
+            return $html;
         }
 
-        echo '<div class="profiler-directory">';
+        $html .= '<div class="profiler-directory">';
 
         foreach($posts as $this_post) {
 
@@ -630,7 +632,7 @@ class ProfilerOrgType {
                 continue;
             }
 
-            echo '<div class="profiler-directory-entry directory-'.$a['orgtype'].' directory-entry-'.$this_post->ID.' '.(isset($_GET['orgid']) ? 'directory-individual' : '').'">';
+            $html .= '<div class="profiler-directory-entry directory-'.$a['orgtype'].' directory-entry-'.$this_post->ID.' '.(isset($_GET['orgid']) ? 'directory-individual' : '').'">';
 
             // Work out the unique URL
             if ($page_url_query_string) {
@@ -642,13 +644,13 @@ class ProfilerOrgType {
             // Image
             $logo = get_the_post_thumbnail($this_post, 'full');
             if(!empty($logo)) {
-                echo '<a href="'.$individual_url.'">';
-                echo $logo;
-                echo '</a>';
+                $html .= '<a href="'.$individual_url.'">';
+                $html .= $logo;
+                $html .= '</a>';
             }
 
             // Item title
-            echo '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
+            $html .= '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
 
             // Meta fields
             $meta_fields = array();
@@ -661,34 +663,42 @@ class ProfilerOrgType {
             }
 
             if(isset($meta_fields['address']) || isset($meta_fields['suburb'])) {
-                echo '<p>';
-                if(isset($meta_fields['address'])) echo $meta_fields['address'];
-                if(isset($meta_fields['suburb'])) echo (isset($meta_fields['address']) ? '<br />' : '') . $meta_fields['suburb'];
-                if(isset($meta_fields['state'])) echo '<br />' . $meta_fields['state'];
-                if(isset($meta_fields['postcode'])) echo ' ' . $meta_fields['postcode'];
-                echo '</p>';
+                $html .=  '<p>';
+
+                if(isset($meta_fields['address']))
+                    $html .= $meta_fields['address'];
+                if(isset($meta_fields['suburb'])) 
+                    $html .= (isset($meta_fields['address']) ? '<br />' : '') . $meta_fields['suburb'];
+                if(isset($meta_fields['state']))
+                    $html .= '<br />' . $meta_fields['state'];
+                if(isset($meta_fields['postcode']))
+                    $html .= ' ' . $meta_fields['postcode'];
+
+                $html .= '</p>';
             }
 
             if(isset($meta_fields['website'])) {
                 if(substr($meta_fields['website'], 0, 4) !== 'http') {
                     $meta_fields['website'] = 'http://' . $meta_fields['website'];
                 }
-                echo '<p><a href="" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
+                $html .= '<p><a href="" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
             }
 
             if(isset($meta_fields['phone'])) {
-                echo '<p>'.$meta_fields['phone'].'</p>';
+                $html .= '<p>'.$meta_fields['phone'].'</p>';
             }
 
             if(isset($_GET['orgid'])) {
-                echo apply_filters('the_content', $this_post->post_content);
+                $html .= apply_filters('the_content', $this_post->post_content);
             }
 
 
-            echo '</div>';
+            $html .= '</div>';
         }
 
-        echo '</div>';
+        $html .= '</div>';
+
+        return $html;
 
     }
 
