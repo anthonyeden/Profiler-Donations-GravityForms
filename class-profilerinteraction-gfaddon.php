@@ -10,7 +10,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
     protected static $_instance = null;
 
     protected $apifield_endpoint = "/ProfilerAPI/interaction/";
-    protected $apifield_apikey = "apiuser";
+    protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
     protected $apifield_ipaddress = 'udf';
     protected $apifield_formurl = true;
