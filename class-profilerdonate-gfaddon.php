@@ -449,6 +449,24 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
+            "label" => 'UDF: Client Preferred Contact Method',
+            "type" => "select",
+            "name" => "profilerdonation_userdefined_clientpreferredcontactmethod",
+            "required" => false,
+            "tooltip" => "Pick the Profiler User Defined Field you wish the client's preferred contact method to be sent to",
+            "choices" => $userdefinedfields,
+        );
+        
+        $fields[] = array(
+            "label" => 'Client Preferred Contact Method Field',
+            "type" => "select",
+            "name" => "profilerdonation_clientpreferredcontactmethod",
+            "required" => false,
+            "tooltip" => "This field's value should match one of these codes: E = Email; P = Post; T = Phone; S = SMS; N = No Contact Preferred",
+            "choices" => $field_settings
+        );
+
+        $fields[] = array(
             "label" => 'UDF: Client IP Address',
             "type" => "select",
             "name" => "profilerdonation_userdefined_clientip",
@@ -649,6 +667,11 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($entry['transaction_id'])) {
             // Gateway transaction id
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
+        }
+
+        if($feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod'] !== "") {
+            // Client Preferred Contact Method
+            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientpreferredcontactmethod']);
         }
 
         // Calculate mailing list subscriptions
