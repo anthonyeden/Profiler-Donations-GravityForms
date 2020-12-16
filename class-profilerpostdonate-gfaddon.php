@@ -158,7 +158,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         $comments = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
 
         $comments .= GFCommon::replace_variables($feed['meta']['profilerdonation_commentsextra'], $form, $entry, false, true, false, 'text');
-        $comments .= html_entity_decode($comments);
+        $comments = html_entity_decode($comments);
 
         // Only allow ASCII printable characters.
         // This is a work-around to the API endpoint not allowing some characters
