@@ -28,6 +28,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         $field_settings = $this->formFields();
         $hiddenFields = $this->hiddenFields();
         $checkboxRadioFields = $this->checkboxRadioFields();
+        $checkboxFields = $this->checkboxFields();
         $userdefinedfields = $this->userDefinedFields();
 
         $numbers = array();
@@ -291,9 +292,9 @@ class GFProfilerCommon extends GFFeedAddOn {
         if($this->supports_mailinglists === true && isset($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']) && is_numeric($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count'])) {
             for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
                 // Loop over mailing list fields
-                $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_field"]);
-                $udf = $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_udf"];
-                $udfText = $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_udftext"];
+                $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_field"]);
+                $udf = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf"];
+                $udfText = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext"];
 
                 if(!empty($udf) && !empty($udfText) && !empty($mailingFieldValue)) {
                     $postData['userdefined' . $udf] = $udfText;
@@ -437,6 +438,34 @@ class GFProfilerCommon extends GFFeedAddOn {
         
         foreach ($fields as $key => $field) {
             if ($field['type'] == 'checkbox' || $field['type'] == 'radio') {
+                foreach($field['inputs'] as $input) {
+                    $formfields[] = array(
+                        "value" => $input['id'],
+                        "label" => "Field #" . $input['id'] . " - " . $field['label'] . " / " . $input['label']
+                    );
+                }
+            }
+        }
+
+        return $formfields;
+    }
+
+    protected function checkboxFields() {
+        // Returns an array of checkbox fields
+
+        $form = $this->get_current_form();
+        $fields = $form['fields'];
+
+        // An array holding all the hidden fields on the form - will be returned
+        $formfields = array(
+            array(
+                "value" => "",
+                "label" => ""
+            )
+        );
+
+        foreach ($fields as $key => $field) {
+            if ($field['type'] == 'checkbox') {
                 foreach($field['inputs'] as $input) {
                     $formfields[] = array(
                         "value" => $input['id'],
