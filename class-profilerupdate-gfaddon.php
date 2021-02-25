@@ -15,6 +15,7 @@ class GFProfilerUpdate extends GFProfilerDonate {
     protected $apifield_ipaddress = 'udf';
     protected $apifield_formurl = true;
     protected $gffield_legacyname = "update";
+    protected $supports_custom_fields = true;
 
     public static function get_instance() {
         if (self::$_instance == null) {

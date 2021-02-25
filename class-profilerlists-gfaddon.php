@@ -12,6 +12,7 @@ class GFProfilerLists extends GFProfilerCommon {
     protected $apifield_endpoint = "/ProfilerPROG/api/api_call.cfm";
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
+    protected $supports_custom_fields = true;
 
     public static function get_instance() {
         if (self::$_instance == null) {
