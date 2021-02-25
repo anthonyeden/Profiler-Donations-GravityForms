@@ -13,6 +13,7 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $apifield_formurl = false;
     protected $gffield_legacyname = "";
     protected $supports_custom_fields = false;
+    protected $supports_mailinglists = false;
 
     public function init() {
         parent::init();
@@ -110,13 +111,56 @@ class GFProfilerCommon extends GFFeedAddOn {
             );
         }
 
+        // Mailing list support
+        if($this->supports_mailinglists === true) {
+            $fields[] = array(
+                "label" => 'Number of Mailing Lists',
+                "type" => "select",
+                "name" => "profiler".$this->gffield_legacyname."_mailinglist_count",
+                "required" => false,
+                "tooltip" => "Select a quantity of Mailing Lists, save this page, and then configure them. You will need to refresh this page after saving to see the extra fields.",
+                "choices" => $numbers,
+                "default" => 0,
+            );
+
+            for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
+                // Loop over mailing list fields
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': UDF',
+                    "type" => "select",
+                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf",
+                    "required" => false,
+                    "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
+                    "choices" => $userdefinedfields,
+                );
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': UDF Text',
+                    "type" => "text",
+                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext",
+                    "required" => false,
+                    "tooltip" => "Enter the string Profiler is expecting in this UDF",
+                );
+
+                $fields[] = array(
+                    "label" => 'Mailing List #'.$i.': Field',
+                    "type" => "select",
+                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_field",
+                    "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
+                    "required" => false,
+                    "choices" => $checkboxFields
+                );
+            }
+        }
+
         if($this->supports_custom_fields === true) {
             $fields[] = array(
                 "label" => 'Number of Custom Fields',
                 "type" => "select",
                 "name" => "profiler_customfields_count",
                 "required" => false,
-                "tooltip" => "How many custom fields do you want to send back to Profiler?",
+                "tooltip" => "How many custom fields do you want to send back to Profiler? You will need to refresh this page after saving to see the extra fields.",
                 "choices" => $numbers,
             );
 
@@ -240,6 +284,21 @@ class GFProfilerCommon extends GFFeedAddOn {
         if($this->supports_custom_fields === true && !empty($feed['meta']['profiler_customfields_count'])) {
             for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
                 $postData["userdefined" . $feed['meta']["profiler_customfield_".$i."_pffield"]] = trim($this->get_field_value($form, $entry, $feed['meta']["profiler_customfield_".$i."_gffield"]));
+            }
+        }
+
+        // Calculate mailing list subscriptions
+        if($this->supports_mailinglists === true && isset($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']) && is_numeric($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count'])) {
+            for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
+                // Loop over mailing list fields
+                $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_field"]);
+                $udf = $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_udf"];
+                $udfText = $feed['meta']["profiler'.$this->gffield_legacyname.'_mailinglist_".$i."_udftext"];
+
+                if(!empty($udf) && !empty($udfText) && !empty($mailingFieldValue)) {
+                    $postData['userdefined' . $udf] = $udfText;
+                }
+
             }
         }
 

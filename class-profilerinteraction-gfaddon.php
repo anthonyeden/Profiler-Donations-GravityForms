@@ -16,6 +16,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
     protected $apifield_formurl = true;
     protected $gffield_legacyname = "interaction";
     protected $supports_custom_fields = true;
+    protected $supports_mailinglists = true;
 
     public static function get_instance() {
         if (self::$_instance == null) {
@@ -58,14 +59,6 @@ class GFProfilerInteraction extends GFProfilerCommon {
                 "label" => "True"
             )
         );
-
-        $mailingnumbers = array();
-        for($i = 0; $i <= 99; $i++) {
-            $mailingnumbers[] = array(
-                "value" => $i,
-                "label" => $i
-            );
-        }
 
         // All the fields to add to the feed:
         $fields = array();
