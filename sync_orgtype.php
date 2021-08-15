@@ -659,7 +659,7 @@ class ProfilerOrgType {
 
             if(!empty($logo)) {
 				// if we are on the directory master page vs directory-individual
-				if(isset($_GET['orgid']) && isset(isset($meta_fields['website'])) && !empty(isset($meta_fields['website'])))  {
+				if(isset($_GET['orgid']) && isset($meta_fields['website']) && !empty($meta_fields['website']))  {
                     // If individual page, link to website
                     $url_link_logo = $meta_fields['website'];
                     $url_link_logo_attrs = 'target="_blank" rel="nofollow"';
