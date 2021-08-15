@@ -641,17 +641,6 @@ class ProfilerOrgType {
                 $individual_url = $page_url_query_string . '?orgid=' . $this_post->ID;
             }
 
-            // Image
-            $logo = get_the_post_thumbnail($this_post, 'full');
-            if(!empty($logo)) {
-                $html .= '<a href="'.$individual_url.'">';
-                $html .= $logo;
-                $html .= '</a>';
-            }
-
-            // Item title
-            $html .= '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
-
             // Meta fields
             $meta_fields = array();
             foreach(array('address', 'suburb', 'state', 'postcode', 'website', 'phone') as $meta_field_name) {
@@ -659,8 +648,34 @@ class ProfilerOrgType {
                 if(empty($meta_value)) {
                     continue;
                 }
+                if($meta_field_name == 'website' && substr(trim($meta_value), 0, 4) !== 'http') {
+                    $meta_value = 'http://' . trim($meta_value);
+                }
                 $meta_fields[$meta_field_name] = trim($meta_value);
             }
+
+            // Image (and link if there is a website meta-data)
+            $logo = get_the_post_thumbnail($this_post, 'full');
+
+            if(!empty($logo)) {
+				// if we are on the directory master page vs directory-individual
+				if(isset($_GET['orgid']) && isset(isset($meta_fields['website'])) && !empty(isset($meta_fields['website'])))  {
+                    // If individual page, link to website
+                    $url_link_logo = $meta_fields['website'];
+                    $url_link_logo_attrs = 'target="_blank" rel="nofollow"';
+                } else {
+                    // If index page, link to listing
+                    $url_link_logo = $individual_url;
+                    $url_link_logo_attrs = '';
+                }
+
+                $html .= '<a href="'.$url_link_logo.'" '.$url_link_logo_attrs.'>';
+                $html .= $logo;
+                $html .= '</a>';
+            }
+
+            // Item title
+            $html .= '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
 
             if(isset($meta_fields['address']) || isset($meta_fields['suburb'])) {
                 $html .=  '<p>';
@@ -677,11 +692,12 @@ class ProfilerOrgType {
                 $html .= '</p>';
             }
 
+			// Show the Website Link
             if(isset($meta_fields['website'])) {
                 if(substr($meta_fields['website'], 0, 4) !== 'http') {
                     $meta_fields['website'] = 'http://' . $meta_fields['website'];
                 }
-                $html .= '<p><a href="" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
+                $html .= '<p><a href="'.$meta_fields['website'].'" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
             }
 
             if(isset($meta_fields['phone'])) {
