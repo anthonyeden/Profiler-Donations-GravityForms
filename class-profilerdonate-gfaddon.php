@@ -130,7 +130,33 @@ class GFProfilerDonate extends GFProfilerCommon {
             "choices" => $product_field_settings,
             "tooltip" => "This amount field will be used if Donation Type is set to 'regular'.",
         );
-        
+
+        $fields[] = array(
+            "label" => 'UDF: Pledge Type ID',
+            "type" => "select",
+            "name" => "profilerdonation_userdefined_pledgetypeid",
+            "required" => false,
+            "tooltip" => "Pick the Profiler User Defined Field you wish the Pledge Type ID to be sent to",
+            "choices" => $userdefinedfields,
+        );
+
+        $fields[] = array(
+            "label" => 'Pledge Type ID',
+            "type" => "select",
+            "name" => "profilerdonation_pledgetypeid",
+            "required" => false,
+            "choices" => $field_settings,
+            "tooltip" => "Set this field to the Pledge Type ID"
+        );
+
+        $fields[] = array(
+            "label" => 'Pledge Type ID (Default)',
+            "type" => "text",
+            "name" => "profilerdonation_pledgetypeid_default",
+            "required" => false,
+            "tooltip" => "Set a default Pledge Type ID, in case the above field isn't set"
+        );
+
         $fields[] = array(
             "label" => 'Client: Title',
             "type" => "select",
@@ -634,6 +660,16 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode'] !== "") {
             // Pledge Acqusition code
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode', $form);
+        }
+
+        if($feed['meta']['profilerdonation_userdefined_pledgetypeid'] !== "") {
+            // Pledge Type ID
+            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgetypeid']);
+
+            if(empty($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']])) {
+                // Default value if above field is empty
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']] = $feed['meta']['profilerdonation_pledgetypeid_default'];
+            }
         }
 
         if($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "" && $feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {

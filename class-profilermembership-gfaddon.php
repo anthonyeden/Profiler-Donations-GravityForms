@@ -85,27 +85,6 @@ class GFProfilerMembership extends GFProfilerDonate {
             "choices" => $userdefinedfields,
         );
 
-        if(function_exists('gf_stripe')) {
-            // Stripe only fields
-            $fields[] = array(
-                "label" => 'UDF: Payment Gateway Card Token',
-                "type" => "select",
-                "name" => "profilerdonation_userdefined_gatewaycardtoken",
-                "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Card Token to",
-                "choices" => $userdefinedfields,
-            );
-    
-            $fields[] = array(
-                "label" => 'UDF: Payment Gateway Customer ID',
-                "type" => "select",
-                "name" => "profilerdonation_userdefined_gatewaycustomerid",
-                "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Customer ID to",
-                "choices" => $userdefinedfields,
-            );
-        }
-
         return $fields;
 
     }
