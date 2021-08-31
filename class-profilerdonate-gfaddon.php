@@ -488,13 +488,43 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'Payment Gateway ID Used',
+            "label" => 'Payment Gateway ID Used (Field)',
             "type" => "select",
             "name" => "profilerdonation_paymentgatewayidused",
             "required" => false,
             "tooltip" => "Pick the Profiler Gateway ID used for this transaction (if you are conditionally using multiple gateways in Gravity Forms)",
             "choices" => $field_settings
         );
+
+        $fields[] = array(
+            "label" => 'Payment Gateway ID Used (Default)',
+            "type" => "text",
+            "name" => "profilerdonation_paymentgatewayidused_default",
+            "required" => false,
+            "tooltip" => "Specify a default Payment Gateway ID to send through to Profiler",
+            "choices" => $field_settings
+        );
+
+        if(function_exists('gf_stripe')) {
+            // Stripe only fields
+            $fields[] = array(
+                "label" => 'UDF: Payment Gateway Card Token',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_gatewaycardtoken",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Card Token to",
+                "choices" => $userdefinedfields,
+            );
+    
+            $fields[] = array(
+                "label" => 'UDF: Payment Gateway Customer ID',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_gatewaycustomerid",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Customer ID to",
+                "choices" => $userdefinedfields,
+            );
+        }
 
 
         return $fields;
@@ -561,6 +591,11 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($feed['meta']['profilerdonation_userdefined_paymentgatewayidused'] !== "") {
             // Payment Gateway ID Used
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentgatewayidused']);
+
+            if(empty($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']])) {
+                // Use default value
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']] = $feed['meta']['profilerdonation_paymentgatewayidused_default'];
+            }
         }
 
 

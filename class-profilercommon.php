@@ -17,6 +17,11 @@ class GFProfilerCommon extends GFFeedAddOn {
 
     public function init() {
         parent::init();
+
+        // Stripe - force Customer creation
+        add_filter('gform_stripe_customer_id',              array($this, 'stripe_customer_id'), 10, 4);
+        add_action('gform_stripe_customer_after_create',    array($this, 'stripe_customer_id_save'), 10, 4);
+        add_filter('gform_stripe_charge_pre_create',        array($this, 'stripe_payment_intent'), 10, 5);
     }
 
     public function feed_settings_fields() {
@@ -279,6 +284,40 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if($this->apifield_formurl === true && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl'])) {
             $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl']] = $entry['source_url'];
+        }
+
+        if(substr($entry['transaction_id'], 0, 3) == "pi_") {
+            // Stripe Payment - find the Customer ID and Card ID, and pass it to the PF API
+
+            try {
+                if ( ! class_exists( '\Stripe\Stripe' ) ) {
+                    require_once( plugin_dir_path( __DIR__ ) . 'gravityformsstripe/includes/autoload.php' );
+                }
+
+                // Set Stripe API key.
+                $stripe_options = get_option('gravityformsaddon_gravityformsstripe_settings');
+                \Stripe\Stripe::setApiKey( $stripe_options[$stripe_options['api_mode'] . '_secret_key'] );
+                
+                // Get the Payment Intent
+                $payment_intent = \Stripe\PaymentIntent::retrieve($entry['transaction_id']);
+
+            } catch(Exception $e) {
+                error_log("STRIPE/PROFILER SETUP ERROR: " . print_r($e, true));
+            }
+
+            if($feed['meta']['profilerdonation_userdefined_gatewaycustomerid'] !== "" && isset($payment_intent)) {
+                // Gateway Customer ID
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycustomerid']] = $payment_intent->customer;
+            }
+
+            if($feed['meta']['profilerdonation_userdefined_gatewaycardtoken'] !== "" && isset($payment_intent)) {
+                // Gateway Card Token
+                try {
+                    $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycardtoken']] = $payment_intent->charges->data[0]->payment_method;
+                } catch(Exception $e) {
+                    error_log("STRIPE/PROFILER CARD TOKEN ERROR: " . print_r($e, true));
+                }
+            }
         }
 
         // Custom Fields
@@ -827,6 +866,38 @@ class GFProfilerCommon extends GFFeedAddOn {
         return $entry;
     }
 
+    public function stripe_customer_id($customer_id, $feed, $entry, $form) {
+        // Create a new customer in Stripe
+
+        // Find email address field
+        foreach($form['fields'] as &$field) {
+            if($field->type == "email") {
+                $email = $this->get_field_value($form, $entry, $field->id);
+            }
+        }
+
+        if(rgars($feed, 'meta/transactionType') == 'product' || rgars($feed, 'meta/transactionType') == 'subscription') {
+            $customer_meta = array();
+            if(isset($email)) {
+                $customer_meta['email'] = $email;
+            }
+            $customer = gf_stripe()->create_customer($customer_meta, $feed, $entry, $form);
+            return $customer->id;
+        }
+
+        return $customer_id;
+    }
+
+    public function stripe_customer_id_save($customer, $feed, &$entry, $form) {
+        // Get the new Stripe Customer ID and save for later use
+        gform_update_meta($entry['id'], 'stripe_customer_id', $customer->id);
+        return $customer;
+    }
+
+    public function stripe_payment_intent($charge_meta, $feed, $submission_data, $form, $entry) {
+        $charge_meta['setup_future_usage'] = 'off_session';
+        return $charge_meta;
+    }
 }
 
 ?>
