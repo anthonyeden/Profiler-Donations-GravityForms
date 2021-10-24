@@ -30,7 +30,7 @@ class GFProfilerMembership extends GFProfilerDonate {
     public function init() {
         parent::init();
 
-        add_filter("gform_validation", array($this, "remove_payment_vaidators"), 1);
+        add_filter("gform_validation", array($this, "remove_payment_validators"), 1);
     }
 
     public function feed_settings_fields_custom() {
@@ -153,7 +153,7 @@ class GFProfilerMembership extends GFProfilerDonate {
 
     }
 
-    public function remove_payment_vaidators($gform_validation_result) {
+    public function remove_payment_validators($gform_validation_result) {
         // Attempts to remove other payment gateways. This is a bit gateway-specific, and will not work universally
 
         if(!$gform_validation_result['is_valid']) {
