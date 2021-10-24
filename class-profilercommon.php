@@ -818,7 +818,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         return implode("-", str_split(substr($number, 0, 6) . str_repeat("X", strlen($number) - 10) . substr($number, -4), 4));
     }
 
-    protected function enable_creditcard($is_enabled) {
+    public function enable_creditcard($is_enabled) {
         return true;
     }
 
