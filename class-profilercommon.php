@@ -876,19 +876,52 @@ class GFProfilerCommon extends GFFeedAddOn {
             }
         }
 
-        if(rgars($feed, 'meta/transactionType') == 'product' || rgars($feed, 'meta/transactionType') == 'subscription') {
-            $customer_meta = array();
-            if(isset($email)) {
-                $customer_meta['email'] = $email;
+        // Find name field on form
+        $name = '';
+        foreach($form['fields'] as $fieldKey => $field) {
+            if($field->type == "name") {
+                $name = $entry[$field->id . '.3'] . ' ' . $entry[$field->id . '.6'];
             }
-            $customer = gf_stripe()->create_customer($customer_meta, $feed, $entry, $form);
-            return $customer->id;
         }
 
-        return $customer_id;
+        if(!isset($email)) {
+            return $customer_id;
+        }
+
+        if(class_exists('\Stripe\Customer')) {
+            // Find an existing customer by email
+            $stripe_all_customers = \Stripe\Customer::all(array(
+                'email' => $email,
+                'limit' => 1
+            ));
+
+            if(isset($stripe_all_customers['data'][0]['id'])) {
+                // Update the name of the customer
+                if(!empty($name)) {
+                    $update = \Stripe\Customer::update(
+                        $stripe_all_customers['data'][0]['id'],
+                        array(
+                            'name' => $name
+                        )
+                    );
+                }
+
+                // Return existing customer ID
+                return $stripe_all_customers['data'][0]['id'];
+            }
+        }
+
+        // Create a new customer
+        $customer_meta = array();
+        $customer_meta['description'] = $email_address . ' ' . $name;
+        $customer_meta['name'] = $name;
+        $customer_meta['email'] = $email_address;
+
+        $customer = gf_stripe()->create_customer($customer_meta, $feed, $entry, $form);
+        return $customer->id;
     }
 
-    public function stripe_customer_id_save($customer, $feed, &$entry, $form) {
+    public function stripe_customer_id_save($customer, $feed, $entry, $form) {
         // Get the new Stripe Customer ID and save for later use
         gform_update_meta($entry['id'], 'stripe_customer_id', $customer->id);
         return $customer;
