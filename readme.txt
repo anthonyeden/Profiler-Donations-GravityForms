@@ -2,9 +2,9 @@
 Contributors: anthonyeden
 Tags: gravity-forms, fundraising, crm, donation, profiler
 Requires at least: 5.0
-Tested up to: 5.4.1
+Tested up to: 5.8.1
 Stable tag: trunk
-Requires PHP: 7.0.0
+Requires PHP: 7.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,17 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 2. Configure the plugin, and Profiler, based on these instructions: https://github.com/anthonyeden/Profiler-Donations-GravityForms/blob/master/README.md
 
 == Changelog ==
+
+= 2.1.0 =
+
+* CAUTION: This is a major update. Please take a backup before upgrading, and test your forms thoroughly after performing the update.
+* New Feature: Import Profiler Subscribers as Wordpress Users
+* New Feature: Import Organisation to a CPT, in order to create a Directory of organisations
+* New Feature: Membership Sign-ups & Renewals
+* New Feature: Update Details for existing Profiler Clients
+* New Feature: Send Custom Fields to Profiler UDFs in many types of data feeds
+* New Feature: Stripe Customer & Card compatibility
+* Various bug fixes and minor changes
 
 = 2.0.0 =
 
