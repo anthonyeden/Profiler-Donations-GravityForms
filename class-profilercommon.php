@@ -6,6 +6,8 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $_url = "";
     protected $_title = "Profiler / Gravity Forms - Integration Feed";
 
+    protected $_capabilities_form_settings = 'gravityforms_edit_settings';
+
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
     protected $apifield_endpoint = "";
