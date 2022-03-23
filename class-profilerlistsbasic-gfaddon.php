@@ -77,6 +77,15 @@ class GFProfilerListsBasic extends GFProfilerCommon {
         );
 
         $fields[] = array(
+            "label" => 'Client: Phone',
+            "type" => "select",
+            "name" => "profilerlist_clientphone",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "phonenumber",
+        );
+
+        $fields[] = array(
             "label" => 'Number of Mailing Lists',
             "type" => "select",
             "name" => "profilerlist_mailinglist_count",
