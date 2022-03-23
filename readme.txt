@@ -2,9 +2,9 @@
 Contributors: anthonyeden
 Tags: gravity-forms, fundraising, crm, donation, profiler
 Requires at least: 5.0
-Tested up to: 5.8.1
+Tested up to: 5.9.2
 Stable tag: trunk
-Requires PHP: 7.2.0
+Requires PHP: 7.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,15 +12,24 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM.
 
 == Description ==
 
-A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can send Donations and Interactions directly to Profiler from your Gravity Form. You can also use Profiler as a Payment Gateway!
+A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can send Donations, Interactions, Mailing List Subscriptions, and more directly to Profiler from your Gravity Form. You can also use Profiler as a Payment Gateway!
 
 
 == Installation ==
 
 1. Install and activate the plugin
-2. Configure the plugin, and Profiler, based on these instructions: https://github.com/anthonyeden/Profiler-Donations-GravityForms/blob/master/README.md
+2. Configure the plugin, and Profiler, based on these instructions: https://support.profiler.net.au/kb/linking-a-payment-donation-gravity-form-to-profiler-using-the-plugin/
 
 == Changelog ==
+
+= 2.2.0 =
+
+Always make a backup before updating, and test your website thoroughly after any update.
+
+* NEW: Add Conditional Logic to all Feeds, for optional feed processing based on user-defined criteria
+* NEW: Mailing List Basic: Add the Phone Number field
+* NEW: Allow editing feed settings with capability 'gravityforms_edit_settings'
+* FIX: profiler_sourcecode & profiler_integrationid meta field storage
 
 = 2.1.0 =
 
