@@ -156,7 +156,7 @@ class GFProfilerListsBasic extends GFProfilerCommon {
         return $postData;
     }
 
-    public function process_feed_success($feed, $entry, $form, $pfResponse) {
+    public function process_feed_success($feed, $entry, $form, $pfResponse, $postData) {
 
         if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
             // Profiler failed. Send the failure email.

@@ -149,7 +149,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         return $postData;
     }
 
-    public function process_feed_success($feed, $entry, $form, $pfResponse) {
+    public function process_feed_success($feed, $entry, $form, $pfResponse, $postData) {
 
         if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
             // Profiler failed. Send the failure email.
@@ -158,7 +158,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         } else {
             // Store the Integration ID as meta so we can use it later
             if(isset($pfResponse['dataArray']['id']))
-                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form_id);
+                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form['id']);
         }
 
     }

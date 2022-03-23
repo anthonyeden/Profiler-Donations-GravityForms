@@ -367,7 +367,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             GFAPI::update_entry($entry);
 
             if(method_exists($this, 'process_feed_success')) {
-                $this->process_feed_success($feed, $entry, $form, $pfResponse);
+                $this->process_feed_success($feed, $entry, $form, $pfResponse, $postData);
             }   
         } else {
             return $pfResponse;
