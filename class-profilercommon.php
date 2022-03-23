@@ -226,6 +226,14 @@ class GFProfilerCommon extends GFFeedAddOn {
             "tooltip" => "Only change this if there is a legitimate technical reasons for doing so. This will cause insecurities. Use with caution."
         );
 
+        $fields[] = array(
+            'type'           => 'feed_condition',
+            'name'           => 'feed_condition',
+            'label'          => 'Feed Condition',
+            'checkbox_label' => 'Enable Conditional Logic for this Feed',
+            'instructions'   => 'This Feed will only be processed if the condition(s) specified here are met.'
+        );
+
         return array(
             array(
                 "title" => "Profiler Integration Settings",
@@ -667,9 +675,10 @@ class GFProfilerCommon extends GFFeedAddOn {
         foreach($feeds as $feed) {
             if ($feed['is_active'] && $this->is_feed_condition_met($feed, $form, $entry)) {
                 return $feed;
-                break;
             }
         }
+
+        return false;
     }
 
     public function get_country_name($country_code) {

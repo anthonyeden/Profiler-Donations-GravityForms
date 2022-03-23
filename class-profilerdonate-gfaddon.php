@@ -787,7 +787,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         $entry = GFFormsModel::create_lead($form);
         $feed = $this->get_feed_instance($form, $entry);
 
-        if(!$feed) {
+        if($feed === false || !is_array($feed)) {
             return $gform_validation_result;
         }
 
