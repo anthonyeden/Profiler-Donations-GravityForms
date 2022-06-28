@@ -578,6 +578,11 @@ class GFProfilerDonate extends GFProfilerCommon {
             $entry = $this->gformEntryPostSave($entry, $form, $gf_profiler_gatewaydata);
         }
 
+        if($useAsGateway == false && isset($entry['payment_status']) && $entry['payment_status'] == "Failed") {
+            GFCommon::log_error("GFProfilerDonate: Skipped sending to Profiler due to Failed payment_status");
+            return false;
+        }
+
         if($useAsGateway == true) {
             // Profiler processes this payment
             $postData['method'] = "gateway.payment";
