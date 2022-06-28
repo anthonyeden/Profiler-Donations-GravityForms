@@ -354,6 +354,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Allow filtering this via the child class
         if(method_exists($this, 'process_feed_custom')) {
             $postData = $this->process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway);
+
+            if($postData === false) {
+                return false;
+            }
+
         }
 
         if(isset($postData['apiurl_override'])) {
