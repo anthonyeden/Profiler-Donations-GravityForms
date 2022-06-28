@@ -24,6 +24,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_stripe_customer_id',              array($this, 'stripe_customer_id'), 10, 4);
         add_action('gform_stripe_customer_after_create',    array($this, 'stripe_customer_id_save'), 10, 4);
         add_filter('gform_stripe_charge_pre_create',        array($this, 'stripe_payment_intent'), 10, 5);
+        add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
     }
 
     public function feed_settings_fields() {
@@ -941,6 +942,26 @@ class GFProfilerCommon extends GFFeedAddOn {
     public function stripe_payment_intent($charge_meta, $feed, $submission_data, $form, $entry) {
         $charge_meta['setup_future_usage'] = 'off_session';
         return $charge_meta;
+    }
+
+    public function stripe_payment_description($description, $strings, $entry, $submission_data, $feed) {
+
+        if(!class_exists('GFAPI') || !isset($entry['form_id'])) {
+            return $description;
+        }
+
+        $description = 'Form #' . $entry['form_id'] . ', Entry #' . $entry['id'];
+
+        // Find Name field
+        $form = GFAPI::get_form($entry['form_id']);
+        foreach($form['fields'] as $fieldKey => $field) {
+            if($field->type == "name") {
+                $description .= ' - ' . $entry[$field->id . '.3'] . ' ' . $entry[$field->id . '.6'];
+            }
+        }
+
+        return $description;
+
     }
 }
 
