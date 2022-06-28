@@ -126,7 +126,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         $pfIntegrationId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_profilerid']);
         $token = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_token']);
 
-        $token_required = md5(password_hash($pfIntegrationId . "/" . $gfEntryId, PASSWORD_DEFAULT, array('salt' => NONCE_SALT)));
+        $token_required = md5(crypt($pfIntegrationId . "/" . $gfEntryId, '$6$rounds=5000$' . md5(NONCE_SALT) . '$'));
 
         if($token !== $token_required) {
             $entry[$feed['meta']['profilerdonation_logs']] = "Invalid security token was provided!";
