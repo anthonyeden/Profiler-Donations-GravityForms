@@ -827,6 +827,12 @@ class GFProfilerCommon extends GFFeedAddOn {
 
     protected function creditcard_mask($number) {
         // Returns a credit card with all but the first six and last four numbers masked
+
+        if(strlen($number) < 11) {
+            // Prevents a fatal error on str_repeat in PHP8
+            return '';
+        }
+
         return implode("-", str_split(substr($number, 0, 6) . str_repeat("X", strlen($number) - 10) . substr($number, -4), 4));
     }
 
