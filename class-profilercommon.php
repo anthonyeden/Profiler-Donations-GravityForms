@@ -931,9 +931,9 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         // Create a new customer
         $customer_meta = array();
-        $customer_meta['description'] = $email_address . ' ' . $name;
+        $customer_meta['description'] = $email . ' ' . $name;
         $customer_meta['name'] = $name;
-        $customer_meta['email'] = $email_address;
+        $customer_meta['email'] = $email;
 
         $customer = gf_stripe()->create_customer($customer_meta, $feed, $entry, $form);
         return $customer->id;
