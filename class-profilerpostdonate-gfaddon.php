@@ -24,7 +24,9 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         }
 
         self::$_instance->form = self::$_instance->get_current_form();
-        self::$_instance->formid = self::$_instance->form["id"];
+        if(is_array(self::$_instance->form)) {
+            self::$_instance->formid = self::$_instance->form["id"];
+        }
 
         return self::$_instance;
     }

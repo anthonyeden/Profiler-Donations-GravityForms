@@ -166,6 +166,10 @@ class ProfilerUsers {
 
         $api_data = $this->api_list_subscriptions();
 
+        if(!is_array($api_data)) {
+            return;
+        }
+
         if($api_data['httpstatus'] != 200) {
             $this->log("HTTP Status from Profiler API: " . $api_data['httpstatus']);
             $this->log("Error Data: " . $api_data['cURLError']);
