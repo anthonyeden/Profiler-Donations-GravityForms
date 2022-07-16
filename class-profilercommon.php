@@ -571,8 +571,6 @@ class GFProfilerCommon extends GFFeedAddOn {
             )
         );
         
-        $totalFieldExists = False;
-        
         foreach ($fields as $key => $field) {
             if ($field['type'] == 'product' || $field['type'] == 'profilerdonate' || $field['type'] == 'total') {
                 if ($field['type'] == 'total') {
@@ -585,15 +583,13 @@ class GFProfilerCommon extends GFFeedAddOn {
                 );
             }
         }
-        
-        //check if field total don't exist then add it
-        if ($totalFieldExists == False) {
-            $formfields[] = array(
-                "value" => "total",
-                "label" => "Total"
-            );
-        }
-        
+
+        // Add a form total field - handled specially by our plugin
+        $formfields[] = array(
+            "value" => "total",
+            "label" => "Form Total"
+        );
+
         return $formfields;
     }
     
