@@ -803,6 +803,16 @@ class GFProfilerDonate extends GFProfilerCommon {
             return $gform_validation_result;
         }
 
+        // Is multi page form?
+        if(isset($form['pagination']['type']) && $form['pagination']['type'] != 'none') {
+
+            // Submitting the final page of the form?
+            if(!isset($_POST['gform_target_page_number_' . $form['id']]) || $_POST['gform_target_page_number_' . $form['id']] != '0') {
+                // Not submitting - skip payment process
+                return $gform_validation_result;
+            }
+        }
+
         if($this->hasFormBeenProcessed($form)) {
             // Entry has already been created
             $gform_validation_result['is_valid'] = false;
