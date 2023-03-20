@@ -130,34 +130,36 @@ class GFProfilerCommon extends GFFeedAddOn {
                 "default" => 0,
             );
 
-            for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
-                // Loop over mailing list fields
-
-                $fields[] = array(
-                    "label" => 'Mailing List #'.$i.': UDF',
-                    "type" => "select",
-                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf",
-                    "required" => false,
-                    "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
-                    "choices" => $userdefinedfields,
-                );
-
-                $fields[] = array(
-                    "label" => 'Mailing List #'.$i.': UDF Text',
-                    "type" => "text",
-                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext",
-                    "required" => false,
-                    "tooltip" => "Enter the string Profiler is expecting in this UDF",
-                );
-
-                $fields[] = array(
-                    "label" => 'Mailing List #'.$i.': Field',
-                    "type" => "select",
-                    "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_field",
-                    "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
-                    "required" => false,
-                    "choices" => $checkboxFields
-                );
+            if(isset($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']) && is_numeric($feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count'])) {
+                for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
+                    // Loop over mailing list fields
+    
+                    $fields[] = array(
+                        "label" => 'Mailing List #'.$i.': UDF',
+                        "type" => "select",
+                        "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf",
+                        "required" => false,
+                        "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
+                        "choices" => $userdefinedfields,
+                    );
+    
+                    $fields[] = array(
+                        "label" => 'Mailing List #'.$i.': UDF Text',
+                        "type" => "text",
+                        "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext",
+                        "required" => false,
+                        "tooltip" => "Enter the string Profiler is expecting in this UDF",
+                    );
+    
+                    $fields[] = array(
+                        "label" => 'Mailing List #'.$i.': Field',
+                        "type" => "select",
+                        "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_field",
+                        "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
+                        "required" => false,
+                        "choices" => $checkboxFields
+                    );
+                }
             }
         }
 
@@ -171,26 +173,28 @@ class GFProfilerCommon extends GFFeedAddOn {
                 "choices" => $numbers,
             );
 
-            for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
-                // Loop over custom fields
-
-                $fields[] = array(
-                    "label" => 'Custom Field #'.$i.': UDF',
-                    "type" => "select",
-                    "name" => "profiler_customfield_".$i."_pffield",
-                    "required" => false,
-                    "tooltip" => "Pick the UDF field in Profiler you wish to use",
-                    "choices" => $userdefinedfields,
-                );
-
-                $fields[] = array(
-                    "label" => 'Custom Field #'.$i.': Gravity Forms Field',
-                    "type" => "select",
-                    "name" => "profiler_customfield_".$i."_gffield",
-                    "required" => false,
-                    "tooltip" => "Pick the field in Gravity Forms you wish to use",
-                    "choices" => $field_settings,
-                );
+            if(isset($feed['meta']['profiler_customfields_count']) && is_numeric($feed['meta']['profiler_customfields_count'])) {
+                for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
+                    // Loop over custom fields
+    
+                    $fields[] = array(
+                        "label" => 'Custom Field #'.$i.': UDF',
+                        "type" => "select",
+                        "name" => "profiler_customfield_".$i."_pffield",
+                        "required" => false,
+                        "tooltip" => "Pick the UDF field in Profiler you wish to use",
+                        "choices" => $userdefinedfields,
+                    );
+    
+                    $fields[] = array(
+                        "label" => 'Custom Field #'.$i.': Gravity Forms Field',
+                        "type" => "select",
+                        "name" => "profiler_customfield_".$i."_gffield",
+                        "required" => false,
+                        "tooltip" => "Pick the field in Gravity Forms you wish to use",
+                        "choices" => $field_settings,
+                    );
+                }
             }
         }
 
@@ -398,6 +402,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns an array of all fields on this form
         
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
         
         // An array holding all the fields on the form - will be returned
@@ -434,6 +443,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns an array of hidden fields
         
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
         
         // An array holding all the hidden fields on the form - will be returned
@@ -479,6 +493,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns an array of checkbox and radio fields
         
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
         
         // An array holding all the hidden fields on the form - will be returned
@@ -507,6 +526,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns an array of checkbox fields
 
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
 
         // An array holding all the hidden fields on the form - will be returned
@@ -535,6 +559,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns an array of checkbox and radio fields
         
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
         
         // An array holding all the hidden fields on the form - will be returned
@@ -561,6 +590,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Returns product fields and total field
         
         $form = $this->get_current_form();
+
+        if(!is_array($form) || !isset($form['fields'])) {
+            return array();
+        }
+
         $fields = $form['fields'];
         
         // An array holding all the product fields on the form - will be returned
