@@ -103,3 +103,6 @@ if (is_admin() && file_exists('BFIGitHubPluginUploader.php')) {
     }
     new BFIGitHubPluginUpdater(__FILE__, 'anthonyeden', "Profiler-Donations-GravityForms");
 }
+
+// Load WooCommerce extension
+require_once(plugin_dir_path(__FILE__) . '/woocommerce/load.php');
