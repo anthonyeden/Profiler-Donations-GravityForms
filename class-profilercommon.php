@@ -370,6 +370,9 @@ class GFProfilerCommon extends GFFeedAddOn {
             unset($postData['apiurl_override']);
         }
 
+        // Allow filtering the Profiler request
+        $postData = apply_filters('profiler_integration_api_request_data', $postData, $form, $entry, $this->apifield_endpoint);
+
         // Send data to Profiler
         $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler'.$this->gffield_legacyname.'_sslmode']);
 
