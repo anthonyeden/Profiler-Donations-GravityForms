@@ -65,6 +65,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         $product_field_settings = self::$_instance->productFields();
         $hiddenFields = self::$_instance->hiddenFields();
         $checkboxRadioFields = self::$_instance->checkboxRadioFields();
+        $checkboxFields = $this->checkboxFields();
         $userdefinedfields = self::$_instance->userDefinedFields();
 
         // All the fields to add to the feed:
@@ -489,6 +490,24 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
+            "label" => 'UDF: Client Privacy Preference',
+            "type" => "select",
+            "name" => "profilerdonation_userdefined_clientprivacypreference",
+            "required" => false,
+            "tooltip" => "Pick the Profiler User Defined Field you wish the client's privacy preference (true/false) to be sent to",
+            "choices" => $userdefinedfields,
+        );
+
+        $fields[] = array(
+            "label" => 'Client Privacy Preference Field',
+            "type" => "select",
+            "name" => "profilerdonation_clientprivacypreference",
+            "required" => false,
+            "tooltip" => "If this checkbox is true, this client will be marked as 'private'.",
+            "choices" => $checkboxFields
+        );
+
+        $fields[] = array(
             "label" => 'UDF: Client IP Address',
             "type" => "select",
             "name" => "profilerdonation_userdefined_clientip",
@@ -704,7 +723,17 @@ class GFProfilerDonate extends GFProfilerCommon {
             // Client Preferred Contact Method
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientpreferredcontactmethod']);
         }
-        
+
+        if($feed['meta']['profilerdonation_userdefined_clientprivacypreference'] !== "") {
+            // Client Privacy Preference
+
+            $privacy_field_value = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientprivacypreference']);
+
+            if(!empty($privacy_field_value)) {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientprivacypreference']] = 'true';
+            }
+        }
+
         if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
             // Recurring donation
             $postData['datatype'] = "PLG";
