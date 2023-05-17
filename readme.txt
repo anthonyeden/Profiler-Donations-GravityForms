@@ -22,6 +22,14 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.4.0 =
+
+* Allow using "Form Total" on all product field dropdowns, even if a custom total field is present
+* Donate Feed: Handle payment processing on multi-page forms
+* Donate Feed: Add support for Client Privacy field
+* Fix some PHP warnings when loading config on the frontend
+* WooCommerce - we now have very basic WooCommerce integration, allowing all transactions in a store to be sent to Profiler as one payment on one source code
+
 = 2.3.0 =
 
 * BREAKING CHANGE: If you use the post-donate feed, you must update your token generation code to use crypt() instead of password_hash()
