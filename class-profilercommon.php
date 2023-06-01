@@ -15,6 +15,8 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $supports_custom_fields = false;
     protected $supports_mailinglists = false;
 
+    protected $_capabilities_form_settings = 'gravityforms_edit_settings';
+
     public function init() {
         parent::init();
 
