@@ -932,7 +932,7 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         // Find name field on form
         $name = '';
-        foreach($form['fields'] as $fieldKey => $field) {
+        foreach($form['fields'] as $fieldKey => &$field) {
             if($field->type == "name") {
                 $name = $entry[$field->id . '.3'] . ' ' . $entry[$field->id . '.6'];
             }
