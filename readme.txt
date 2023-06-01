@@ -22,6 +22,11 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.4.1 =
+
+* Fix a bug with Stripe payments where failed payments may not return an error message
+* Explicitly require the 'gravityforms_edit_settings' capability for Profiler feeds
+
 = 2.4.0 =
 
 * Allow using "Form Total" on all product field dropdowns, even if a custom total field is present
