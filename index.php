@@ -96,13 +96,5 @@ class ProfilerDonation_GF_Launch {
     }
 }
 
-// Code to update this plugin via GitHub
-if (is_admin() && file_exists('BFIGitHubPluginUploader.php')) {
-    if(!class_exists('BFIGitHubPluginUpdater')) {
-        require_once( 'BFIGitHubPluginUploader.php' );
-    }
-    new BFIGitHubPluginUpdater(__FILE__, 'anthonyeden', "Profiler-Donations-GravityForms");
-}
-
 // Load WooCommerce extension
 require_once(plugin_dir_path(__FILE__) . '/woocommerce/load.php');
