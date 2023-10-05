@@ -137,6 +137,12 @@ class WC_Integration_Profiler extends WC_Integration {
                 continue;
             }
 
+            // Don't sync orders made in the last 60 seconds. This is a workaround for Payment Gateway status callback timing issues.
+            $order_date = $order->get_date_created();
+            if($order_date != null && $order_date->getTimestamp() > time() - 60 && $order->needs_payment() == true) {
+                continue;
+            }
+
             $this->order_set_meta($order->get_id(), 'profiler_progress', 'started_cron_' . time());
 
             // Run the logic to place the order
@@ -371,7 +377,7 @@ class WC_Integration_Profiler extends WC_Integration {
 
         curl_close($ch);
 
-        // Redcat some details
+        // Redact some details
         $profiler_query['apikey'] = '--REDACTED--';
         $profiler_query['apipass'] = '--REDACTED--';
 
