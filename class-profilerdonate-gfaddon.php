@@ -113,7 +113,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_paymentmethod",
             "required" => false,
             "choices" => $field_settings,
-            "tooltip" => "The value of this field must be set to 'creditcard', 'bankdebit', or 'paypal'. If this field isn't set, or an invalid value is passed, we assume it's a credit card."
+            "tooltip" => "The value of this field must be set to 'creditcard', 'bankdebit', 'bankdeposit', or 'paypal'. If this field isn't set, or an invalid value is passed, we assume it's a credit card."
         );
         
         $fields[] = array(
@@ -770,7 +770,15 @@ class GFProfilerDonate extends GFProfilerCommon {
             gform_add_meta($entry["id"], "profiler_type", "onceoff", $form_id);
         }
         
-        if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
+        if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdeposit") {
+            // Send a pending payment through to Profile for a Bank Deposit
+            $postData['status'] = "Pending";
+            unset($postData['cardtype']);
+            unset($postData['cardnumber']);
+            unset($postData['ccv']);
+            unset($postData['cardexpiry']);
+
+        } elseif($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdebit") {
             // Bank Debit - not currently wired up to Profiler correctly
             $postData['status'] = "Pending";
             unset($postData['cardtype']);
