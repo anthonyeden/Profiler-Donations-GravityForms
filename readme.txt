@@ -22,6 +22,12 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.4.2 =
+
+* Add 'bankdeposit' payment method
+* Add filter profiler_integration_allow_profiler_gateway, allowing the Gateway option to be disabled on a site
+* WooCommerce: Fix a timing issue to ensure payment info is received before sending transaction data to Profiler
+
 = 2.4.1 =
 
 * Fix a bug with Stripe payments where failed payments may not return an error message
