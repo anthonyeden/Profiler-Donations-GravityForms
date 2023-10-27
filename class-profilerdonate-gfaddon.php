@@ -71,6 +71,21 @@ class GFProfilerDonate extends GFProfilerCommon {
         // All the fields to add to the feed:
         $fields = array();
 
+        $field_gateway_choices = array(
+            array(
+                'label'         => 'No - Gravity Forms will Process Payments',
+                'value'         => 'false',
+            ),
+        );
+
+        if(apply_filters('profiler_integration_allow_profiler_gateway', true) == true) {
+            // This filter allows us to disable the Profiler Gateway feature on a site
+            $field_gateway_choices[] = array(
+                'label'         => 'Yes - Profiler will Process Payments',
+                'value'         => 'true',
+            );
+        }
+
         $fields[] = array(
             "label" => 'Use Profiler As A Gateway?',
             "type" => "select",
@@ -78,16 +93,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "required" => false,
             "tooltip" => "Set this to 'Yes' if you want Profiler to be responsible for processing the payment (instead of a
                           Gravity Forms Payment Plugin). If you use this option, disable any other Payment Plugins.",
-            'choices' => array(
-                array(
-                    'label'         => 'No - Gravity Forms will Process Payments',
-                    'value'         => 'false',
-                ),
-                array(
-                    'label'         => 'Yes - Profiler will Process Payments',
-                    'value'         => 'true',
-                ),
-            ),
+            'choices' => $field_gateway_choices,
         );
 
         $fields[] = array(
