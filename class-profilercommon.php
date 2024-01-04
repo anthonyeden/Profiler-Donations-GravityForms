@@ -305,8 +305,8 @@ class GFProfilerCommon extends GFFeedAddOn {
             // Stripe Payment - find the Customer ID and Card ID, and pass it to the PF API
 
             try {
-                if ( ! class_exists( '\Stripe\Stripe' ) ) {
-                    require_once( plugin_dir_path( __DIR__ ) . 'gravityformsstripe/includes/autoload.php' );
+                if(!class_exists('\Stripe\Stripe')) {
+                    require_once(plugin_dir_path(__DIR__) . 'gravityformsstripe/includes/autoload.php');
                 }
 
                 // Set Stripe API key.
@@ -332,6 +332,15 @@ class GFProfilerCommon extends GFFeedAddOn {
                 } catch(Exception $e) {
                     error_log("STRIPE/PROFILER CARD TOKEN ERROR: " . print_r($e, true));
                 }
+            }
+        }
+
+        // PayFURL-supplied Gateway Token
+        if($feed['meta']['profilerdonation_userdefined_gatewaycardtoken'] !== "" && isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_payment_method_id_provider'])) {
+            $payfurl_provider_token = $_POST['payfurl_payment_details']['captured_payment']['payfurl_payment_method_id_provider'];
+            
+            if(!empty($payfurl_provider_token)) {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycardtoken']] = $payfurl_provider_token;
             }
         }
 
