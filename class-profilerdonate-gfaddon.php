@@ -523,7 +523,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
         
         $fields[] = array(
-            "label" => 'UDF: Gateway Transaction ID',
+            "label" => 'UDF: Gateway Transaction ID / Gateway Response',
             "type" => "select",
             "name" => "profilerdonation_userdefined_gatewaytransactionid",
             "required" => false,
@@ -558,8 +558,8 @@ class GFProfilerDonate extends GFProfilerCommon {
             "choices" => $field_settings
         );
 
-        if(function_exists('gf_stripe')) {
-            // Stripe only fields
+        if(function_exists('gf_stripe') || class_exists('GF_PayFURL')) {
+            // Stripe & PayFURL only fields
             $fields[] = array(
                 "label" => 'UDF: Payment Gateway Card Token',
                 "type" => "select",
@@ -568,7 +568,10 @@ class GFProfilerDonate extends GFProfilerCommon {
                 "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Card Token to",
                 "choices" => $userdefinedfields,
             );
+        }
     
+        if(function_exists('gf_stripe')) {
+            // Stripe only fields
             $fields[] = array(
                 "label" => 'UDF: Payment Gateway Customer ID',
                 "type" => "select",
@@ -723,6 +726,20 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($entry['transaction_id'])) {
             // Gateway transaction id
             $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
+        }
+
+        if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'])) {
+            // PayFURL-supplied Gateway Response
+            $payfurl_gateway_response = $_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'];
+
+            if(!empty($payfurl_gateway_response)) {
+                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $payfurl_gateway_response;
+            }
+        }
+
+        if(isset($_POST['payfurl_payment_details']['captured_payment']['masked_card_number'])) {
+            // PayFURL Masked Card Number
+            $postData['maskcard'] = $_POST['payfurl_payment_details']['captured_payment']['masked_card_number'];
         }
 
         if($feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod'] !== "") {
