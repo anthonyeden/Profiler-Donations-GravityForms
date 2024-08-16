@@ -25,6 +25,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_action('gform_stripe_customer_after_create',    array($this, 'stripe_customer_id_save'), 10, 4);
         add_filter('gform_stripe_charge_pre_create',        array($this, 'stripe_payment_intent'), 10, 5);
         add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
+        add_filter('gform_stripe_payment_element_initial_payment_information', array($this, 'stripe_elements_setup'), 10, 3);
     }
 
     public function feed_settings_fields() {
@@ -995,6 +996,11 @@ class GFProfilerCommon extends GFFeedAddOn {
     public function stripe_payment_intent($charge_meta, $feed, $submission_data, $form, $entry) {
         $charge_meta['setup_future_usage'] = 'off_session';
         return $charge_meta;
+    }
+
+    public function stripe_elements_setup($intent_information, $feed, $form) {
+        $intent_information['setup_future_usage'] = 'off_session';
+        return $intent_information; 
     }
 
     public function stripe_payment_description($description, $strings, $entry, $submission_data, $feed) {
