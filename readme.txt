@@ -22,6 +22,12 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.4.3 =
+
+* Add support for PayFURL
+* Stripe: Fix off_session setting in latest Stripe Elements
+* Update cacert.pem
+
 = 2.4.2 =
 
 * Add 'bankdeposit' payment method
