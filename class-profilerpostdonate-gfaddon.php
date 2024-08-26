@@ -9,11 +9,13 @@ class GFProfilerPostDonate extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerAPI/LegacyPost/";
-    protected $apifield_apikey = "api_user";
-    protected $apifield_apipass = "api_pass";
-    protected $apifield_ipaddress = 'udf';
-    protected $apifield_formurl = true;
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/RapidEndpoint/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
     protected $gffield_legacyname = "donation";
     protected $supports_custom_fields = true;
     protected $supports_mailinglists = true;
@@ -58,19 +60,10 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Comments',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_comments",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish to use for the Comments field",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Extra Comments Text',
             "type" => "textarea",
             "name" => "profilerdonation_commentsextra",
-            "required" => true,
+            "required" => false,
             "class" => "merge-tag-support",
             "tooltip" => "This is extra text to be sent to Profiler as an Interaction. Protip: Include Gravity Forms Merge Fields in this textarea to accept user input.",
         );
@@ -108,7 +101,6 @@ class GFProfilerPostDonate extends GFProfilerCommon {
 
     public function process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway = false) {
 
-        $postData['method'] = "integration.send";
         $postData['datatype'] = "OLDON";
 
         $comments = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
@@ -122,8 +114,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
 
         // Comments
         $postData['comments'] = $comments;
-        $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_comments']] = $comments;
-        
+
         $gfEntryId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_gfentryid']);
         $pfIntegrationId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_profilerid']);
         $token = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_token']);
@@ -146,23 +137,23 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         }
 
         // This is the ID of the actual donation entry
-        $postData['HoldingID'] = $pfIntegrationId;
+        $postData['holdingId'] = $pfIntegrationId;
 
         return $postData;
     }
 
     public function process_feed_success($feed, $entry, $form, $pfResponse, $postData) {
 
-        if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
-            // Profiler failed. Send the failure email.
-            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profiler_erroremailaddress']);
-
-        } else {
+        if(isset($pfResponse['dataArray']['success']) && $pfResponse['dataArray']['success'] === true) {
             // Store the Integration ID as meta so we can use it later
-            if(isset($pfResponse['dataArray']['id']))
-                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form['id']);
+            if(isset($pfResponse['dataArray']['integrationId'])) {
+                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['integrationId'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_integration_guid", $pfResponse['dataArray']['integrationGuid'], $form['id']);
+            }
+        } else {
+            // Profiler failed. Send the failure email.
+            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']["profiler".$this->gffield_legacyname."_erroremailaddress"]);
         }
-
     }
 
 }

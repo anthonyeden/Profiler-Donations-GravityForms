@@ -6,6 +6,8 @@ class GFProfilerCommon extends GFFeedAddOn {
     protected $_url = "";
     protected $_title = "Profiler / Gravity Forms - Integration Feed";
 
+    protected $api_type = "form"; // form or json
+    protected $api_domain = "profilersystem.com";
     protected $apifield_apikey = "apikey";
     protected $apifield_apipass = "apipass";
     protected $apifield_endpoint = "";
@@ -64,15 +66,17 @@ class GFProfilerCommon extends GFFeedAddOn {
             "type" => "text",
             "name" => "profiler".$this->gffield_legacyname."_instancedomainname",
             "required" => true,
-            "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profiler.net.au/' is 'instance.profiler.net.au'",
+            "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profilersystem.com/' is 'instance.profilesystem.com'",
         );
         
-        $fields[] = array(
-            "label" => 'Profiler Database Name',
-            "type" => "text",
-            "name" => "profiler".$this->gffield_legacyname."_dbname",
-            "required" => true,
-        );
+        if($this->api_type !== 'json') {
+            $fields[] = array(
+                "label" => 'Profiler Database Name',
+                "type" => "text",
+                "name" => "profiler".$this->gffield_legacyname."_dbname",
+                "required" => true,
+            );
+        }
         
         $fields[] = array(
             "label" => 'Profiler API Key',
@@ -137,30 +141,32 @@ class GFProfilerCommon extends GFFeedAddOn {
                 for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
                     // Loop over mailing list fields
     
+                    if($this->api_type !== 'json') {
+                        $fields[] = array(
+                            "label" => 'Mailing List #'.$i.': UDF',
+                            "type" => "select",
+                            "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf",
+                            "required" => false,
+                            "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
+                            "choices" => $userdefinedfields,
+                        );
+                    }
+
                     $fields[] = array(
-                        "label" => 'Mailing List #'.$i.': UDF',
-                        "type" => "select",
-                        "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf",
-                        "required" => false,
-                        "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
-                        "choices" => $userdefinedfields,
-                    );
-    
-                    $fields[] = array(
-                        "label" => 'Mailing List #'.$i.': UDF Text',
+                        "label" => ($this->api_type == 'json' ? 'Mailing List #'.$i.': Mailing Type Code' : 'Mailing List #'.$i.': UDF Text'),
                         "type" => "text",
                         "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext",
                         "required" => false,
                         "tooltip" => "Enter the string Profiler is expecting in this UDF",
                     );
-    
+
                     $fields[] = array(
                         "label" => 'Mailing List #'.$i.': Field',
                         "type" => "select",
                         "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_field",
                         "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
                         "required" => false,
-                        "choices" => $checkboxFields
+                        "choices" => array_merge($checkboxRadioFields, array(array("value" => "always", "label" => "Always Subscribe"))),
                     );
                 }
             }
@@ -258,13 +264,15 @@ class GFProfilerCommon extends GFFeedAddOn {
         // All the POST data for Profiler gets stored in this variable
         $postData = array();
 
-        $postData['DB'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_dbname'];
+        if($this->api_type !== 'json') {
+            $postData['DB'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_dbname'];
+        }
         $postData[$this->apifield_apikey] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apikey'];
         $postData[$this->apifield_apipass] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apipass'];
 
         if(empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'])) {
             // Respect the setting from when we only accepted the first part of the domain name
-            $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'] . ".profiler.net.au";
+            $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_instancename'] . ".profilersystem.com";
         }
 
         if(empty($feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_serveraddress'])) {
@@ -300,6 +308,8 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if($this->apifield_formurl === true && !empty($feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl'])) {
             $postData['userdefined' . $feed['meta']['profiler'.$this->gffield_legacyname.'_userdefined_formurl']] = $entry['source_url'];
+        } else if($this->apifield_formurl !== false) {
+            $postData[$this->apifield_formurl] = $entry['source_url'];
         }
 
         if(substr($entry['transaction_id'], 0, 3) == "pi_") {
@@ -321,15 +331,15 @@ class GFProfilerCommon extends GFFeedAddOn {
                 error_log("STRIPE/PROFILER SETUP ERROR: " . print_r($e, true));
             }
 
-            if($feed['meta']['profilerdonation_userdefined_gatewaycustomerid'] !== "" && isset($payment_intent)) {
+            if(isset($payment_intent)) {
                 // Gateway Customer ID
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycustomerid']] = $payment_intent->customer;
+                $postData['paymentGatewayCustomerId'] = $payment_intent->customer;
             }
 
-            if($feed['meta']['profilerdonation_userdefined_gatewaycardtoken'] !== "" && isset($payment_intent)) {
+            if(isset($payment_intent)) {
                 // Gateway Card Token
                 try {
-                    $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycardtoken']] = $payment_intent->charges->data[0]->payment_method;
+                    $postData['gatewayCardToken'] = $payment_intent->charges->data[0]->payment_method;
                 } catch(Exception $e) {
                     error_log("STRIPE/PROFILER CARD TOKEN ERROR: " . print_r($e, true));
                 }
@@ -337,18 +347,32 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         // PayFURL-supplied Gateway Token
-        if($feed['meta']['profilerdonation_userdefined_gatewaycardtoken'] !== "" && isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_payment_method_id_provider'])) {
+        if(isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_payment_method_id_provider'])) {
             $payfurl_provider_token = $_POST['payfurl_payment_details']['captured_payment']['payfurl_payment_method_id_provider'];
-            
+
             if(!empty($payfurl_provider_token)) {
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaycardtoken']] = $payfurl_provider_token;
+                $postData['gatewayCardToken'] = $payfurl_provider_token;
             }
         }
 
         // Custom Fields
         if($this->supports_custom_fields === true && !empty($feed['meta']['profiler_customfields_count'])) {
             for($i = 1; $i <= $feed['meta']['profiler_customfields_count']; $i++) {
-                $postData["userdefined" . $feed['meta']["profiler_customfield_".$i."_pffield"]] = trim($this->get_field_value($form, $entry, $feed['meta']["profiler_customfield_".$i."_gffield"]));
+
+                $value = trim($this->get_field_value($form, $entry, $feed['meta']["profiler_customfield_".$i."_gffield"]));
+
+                if($this->api_type == 'json') {
+                    if(!isset($postData['userDefinedFields'])) {
+                        $postData['userDefinedFields'] = array();
+                    }
+
+                    $postData['userDefinedFields']["userDefined" . $feed['meta']["profiler_customfield_".$i."_pffield"]] = $value;
+
+                } else {
+                    $postData["userdefined" . $feed['meta']["profiler_customfield_".$i."_pffield"]] = $value;
+                }
+
+                
             }
         }
 
@@ -357,13 +381,25 @@ class GFProfilerCommon extends GFFeedAddOn {
             for($i = 1; $i <= $feed['meta']['profiler'.$this->gffield_legacyname.'_mailinglist_count']; $i++) {
                 // Loop over mailing list fields
                 $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_field"]);
-                $udf = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf"];
                 $udfText = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext"];
 
-                if(!empty($udf) && !empty($udfText) && !empty($mailingFieldValue)) {
-                    $postData['userdefined' . $udf] = $udfText;
-                }
+                if($this->api_type == 'json') {
 
+                    if(!isset($postData['mailingList'])) {
+                        $postData['mailingList'] = '';
+                    }
+
+                    if(!empty($udfText) && (!empty($mailingFieldValue) || $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_field"] == 'always')) {
+                        $postData['mailingList'] .= (!empty($postData['mailingList']) ? ',' : '') . $udfText;
+                    }
+
+                } else {
+                    $udf = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udf"];
+
+                    if(!empty($udf) && !empty($udfText) && (!empty($mailingFieldValue) || $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_field"] == 'always')) {
+                        $postData['userdefined' . $udf] = $udfText;
+                    }
+                }
             }
         }
 
@@ -385,17 +421,24 @@ class GFProfilerCommon extends GFFeedAddOn {
         // Allow filtering the Profiler request
         $postData = apply_filters('profiler_integration_api_request_data', $postData, $form, $entry, $this->apifield_endpoint);
 
+        // Update URL for newer APIs
+        if($this->api_domain !== 'profilersystem.com') {
+            $API_URL = str_replace(".profilersystem.com", "." . $this->api_domain, $API_URL);
+        }
+
         // Send data to Profiler
         $pfResponse = $this->sendDataToProfiler($API_URL, $postData, $feed['meta']['profiler'.$this->gffield_legacyname.'_sslmode']);
 
         if($fromValidatorProcessPFGateway === false) {
             // Save Profiler response data back to the form entry
-            $logsToStore = json_encode($pfResponse);
+            $logsToStore = json_encode($pfResponse, JSON_PRETTY_PRINT);
             $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
-            $entry[$feed['meta']['profiler'.$this->gffield_legacyname.'_logs']] = htmlentities($logsToStore);
+            $entry[$feed['meta']["profiler".$this->gffield_legacyname."_logs"]] = htmlentities($logsToStore);
             GFAPI::update_entry($entry);
+
+            gform_add_meta($entry["id"], "profiler_logs", $logsToStore, $form['id']);
 
             if(method_exists($this, 'process_feed_success')) {
                 $this->process_feed_success($feed, $entry, $form, $pfResponse, $postData);
@@ -650,13 +693,15 @@ class GFProfilerCommon extends GFFeedAddOn {
             $profiler_query[$key] = trim($val);
         }
 
+        if(isset($profiler_query['DB'])) {
+            $url .= '?' . http_build_query(array("DB" => $profiler_query['DB'], "Call" => 'submit'));
+        }
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query(array("DB" => $profiler_query['DB'], "Call" => 'submit')));
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen(http_build_query($profiler_query))));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($profiler_query));
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+
         if($ssl_mode == "bundled_ca") {
             // Use the CA Cert bundled with this plugin
             // Sourced from https://curl.haxx.se/ca/cacert.pem
@@ -668,25 +713,43 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         }
 
+        if($this->api_type === 'json') {
+            // JSON POST
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($profiler_query));
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        } else {
+            // FORM POST
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen(http_build_query($profiler_query))));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($profiler_query));
+        }
+
         $result = curl_exec($ch);
         $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        
+
         if(curl_error($ch)) {
             $cURL_error = curl_error($ch);
         } else {
             $cURL_error = null;
         }
-        
+
         curl_close($ch);
-        
+
+        if($this->api_type === 'json') {
+            $data_decoded = json_decode($result, true);
+        } else {
+            $data_decoded = json_decode(json_encode((array)simplexml_load_string($result)), true);
+        }
+
         return array(
             "httpstatus" => $status_code,
+            "url" => $url,
             "dataSent" => $profiler_query,
             "data" => $result,
-            "dataXML" => simplexml_load_string($result),
-            "dataArray" => json_decode(json_encode((array)simplexml_load_string($result)), 1),
+            "dataArray" => $data_decoded,
             "cURLError" => $cURL_error,
             "cURL_SSL_Mode" => $ssl_mode,
+            "api_type" => $this->api_type,
         );
     }
 

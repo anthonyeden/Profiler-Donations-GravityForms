@@ -9,11 +9,13 @@ class GFProfilerDonate extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerAPI/Legacy/";
-    protected $apifield_apikey = "apikey";
-    protected $apifield_apipass = "apipass";
-    protected $apifield_ipaddress = 'udf';
-    protected $apifield_formurl = true;
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/RapidEndpoint/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
     protected $gffield_legacyname = "donation";
     protected $supports_custom_fields = true;
     protected $supports_mailinglists = true;
@@ -128,7 +130,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_pledgefreq",
             "required" => false,
             "choices" => $field_settings,
-            "tooltip" => "The value of this field must be set to 'monthly' or 'yearly'. This field will be used if 'Donation Type' is set to 'regular'."
+            "tooltip" => "The value of this field must be set to 'weekly', 'monthly' or 'yearly'. This field will be used if 'Donation Type' is set to 'regular'."
         );
         
         $fields[] = array(
@@ -138,15 +140,6 @@ class GFProfilerDonate extends GFProfilerCommon {
             "required" => false,
             "choices" => $product_field_settings,
             "tooltip" => "This amount field will be used if Donation Type is set to 'regular'.",
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Pledge Type ID',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_pledgetypeid",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the Pledge Type ID to be sent to",
-            "choices" => $userdefinedfields,
         );
 
         $fields[] = array(
@@ -181,7 +174,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_clientfname",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "firstname",
+            "pf_apifield" => "firstName",
         );
         
         $fields[] = array(
@@ -262,7 +255,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_clientphoneah",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phoneah",
+            "pf_apifield" => "phoneAH",
         );
         
         $fields[] = array(
@@ -271,7 +264,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_clientphonebus",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonebus",
+            "pf_apifield" => "phoneBus",
         );
         
         $fields[] = array(
@@ -280,7 +273,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_clientphonemobile",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonemobile",
+            "pf_apifield" => "phoneMobile",
         );
         
         $fields[] = array(
@@ -326,31 +319,14 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Receipt Name',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_receiptname",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation receipt name to be sent to",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Receipt Name Field',
             "type" => "select",
             "name" => "profilerdonation_receiptname",
             "required" => false,
             "choices" => $field_settings,
+            "pf_apifield" => "receiptName",
         );
-        
-        $fields[] = array(
-            "label" => 'UDF: Donation Source Code',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_sourcecode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation source code to be sent to",
-            "choices" => $userdefinedfields,
-        );
-        
+
         $fields[] = array(
             "label" => 'Donation Source Code - Default Value',
             "type" => "text",
@@ -373,16 +349,7 @@ class GFProfilerDonate extends GFProfilerCommon {
                 )
                 + self::$_instance->formFields("Form Field: "),
         );
-        
-        $fields[] = array(
-            "label" => 'UDF: Pledge Source Code',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_pledgesourcecode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the pledge source code to be sent to",
-            "choices" => $userdefinedfields,
-        );
-        
+
         $fields[] = array(
             "label" => 'Pledge Source Code - Default Value',
             "type" => "text",
@@ -405,16 +372,7 @@ class GFProfilerDonate extends GFProfilerCommon {
                 )
                 + self::$_instance->formFields("Form Field: "),
         );
-        
-        $fields[] = array(
-            "label" => 'UDF: Pledge Acquisition Code',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_pledgeacquisitioncode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the pledge acquisition code to be sent to",
-            "choices" => $userdefinedfields,
-        );
-        
+
         $fields[] = array(
             "label" => 'Pledge Acquisition Code - Default Value',
             "type" => "text",
@@ -424,30 +382,12 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Client Acquisition',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_clientacquisitioncode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client acquisition code to be sent to.",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Client Acquisition Field',
             "type" => "select",
             "name" => "profilerdonation_clientacquisitioncode",
             "required" => false,
             "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
             "choices" => $field_settings
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Donation Purpose',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_donationpurposecode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation's purpose code to be sent to",
-            "choices" => $userdefinedfields,
         );
         
         $fields[] = array(
@@ -460,30 +400,12 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Donation Tag',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_donationtagcode",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation's tag code to be sent to. Do not set this up if you use Tag Automation within Profiler.",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Donation Tag Field',
             "type" => "select",
             "name" => "profilerdonation_donationtagcode",
             "required" => false,
             "tooltip" => "This field's value should match the Tag Codes setup within Profiler.",
             "choices" => $field_settings
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Client Preferred Contact Method',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_clientpreferredcontactmethod",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client's preferred contact method to be sent to",
-            "choices" => $userdefinedfields,
         );
         
         $fields[] = array(
@@ -496,48 +418,12 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Client Privacy Preference',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_clientprivacypreference",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client's privacy preference (true/false) to be sent to",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Client Privacy Preference Field',
             "type" => "select",
             "name" => "profilerdonation_clientprivacypreference",
             "required" => false,
             "tooltip" => "If this checkbox is true, this client will be marked as 'private'.",
             "choices" => $checkboxFields
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Client IP Address',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_clientip",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
-            "choices" => $userdefinedfields,
-        );
-        
-        $fields[] = array(
-            "label" => 'UDF: Gateway Transaction ID / Gateway Response',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_gatewaytransactionid",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the gateway transaction ID to be sent to (certain gateways only)",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Payment Gateway ID Used',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_paymentgatewayidused",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the payment gateway ID to be sent to",
-            "choices" => $userdefinedfields,
         );
 
         $fields[] = array(
@@ -557,30 +443,6 @@ class GFProfilerDonate extends GFProfilerCommon {
             "tooltip" => "Specify a default Payment Gateway ID to send through to Profiler",
             "choices" => $field_settings
         );
-
-        if(function_exists('gf_stripe') || class_exists('GF_PayFURL')) {
-            // Stripe & PayFURL only fields
-            $fields[] = array(
-                "label" => 'UDF: Payment Gateway Card Token',
-                "type" => "select",
-                "name" => "profilerdonation_userdefined_gatewaycardtoken",
-                "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Card Token to",
-                "choices" => $userdefinedfields,
-            );
-        }
-    
-        if(function_exists('gf_stripe')) {
-            // Stripe only fields
-            $fields[] = array(
-                "label" => 'UDF: Payment Gateway Customer ID',
-                "type" => "select",
-                "name" => "profilerdonation_userdefined_gatewaycustomerid",
-                "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to send the payment gateway Customer ID to",
-                "choices" => $userdefinedfields,
-            );
-        }
 
 
         return $fields;
@@ -619,8 +481,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['apiurl_override'] = "/ProfilerAPI/payments/";
         } else {
             // Profiler will just record integration data
-            $postData['method'] = "integration.send";
-            $postData['datatype'] = "OLDON";
+            $postData['dataType'] = "OLDON";
         }
 
         // Calculate the total or just use one field:
@@ -634,8 +495,6 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['pledgeamount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
         }
 
-        $postData['clientname'] = $postData['firstname'] . ' ' . $postData['surname'];
-
         // Credit card fields:
         $cardDetails = $this->getCardDetails($form);
         $postData['cardtype'] = $cardDetails['type'];
@@ -644,21 +503,13 @@ class GFProfilerDonate extends GFProfilerCommon {
         $postData['cardexpiry'] = $cardDetails['expiry_month'] . " " . $cardDetails['expiry_year'];
         $postData['ccv'] = $cardDetails['ccv'];
 
-        if($feed['meta']['profilerdonation_userdefined_receiptname'] !== "") {
-            // Receipt Name
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_receiptname']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_receiptname']);
+        // Payment Gateway ID Used
+        $postData['paymentGatewayIdUsed'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentgatewayidused']);
+
+        if(empty($postData['paymentGatewayIdUsed'])) {
+            // Use default value
+            $postData['paymentGatewayIdUsed'] = $feed['meta']['profilerdonation_paymentgatewayidused_default'];
         }
-
-        if($feed['meta']['profilerdonation_userdefined_paymentgatewayidused'] !== "") {
-            // Payment Gateway ID Used
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentgatewayidused']);
-
-            if(empty($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']])) {
-                // Use default value
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_paymentgatewayidused']] = $feed['meta']['profilerdonation_paymentgatewayidused_default'];
-            }
-        }
-
 
         // Source codes
         if(isset($feed['meta']['profilerdonation_sourcecodemode']) && $feed['meta']['profilerdonation_sourcecodemode'] !== "normal") {
@@ -670,70 +521,59 @@ class GFProfilerDonate extends GFProfilerCommon {
             $donationSourceCode = $this->getDonationCode($feed, 'sourcecode', $form);
         }
 
-        $postData['sourcecode'] = $donationSourceCode;
-
-        if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
-            // Donation Source Code
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $donationSourceCode;
-        }
+        $postData['donationSourceCode'] = $donationSourceCode;
         
-        if($feed['meta']['profilerdonation_userdefined_pledgesourcecode'] !== "") {
-            // Pledge Source Code
+        // Pledge Source Code
 
-            if(isset($feed['meta']['profilerdonation_pledgesourcecodemode']) && $feed['meta']['profilerdonation_pledgesourcecodemode'] !== "normal") {
-                // The source code is a value of a specified field
-                $pledgeSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgesourcecodemode']);
+        if(isset($feed['meta']['profilerdonation_pledgesourcecodemode']) && $feed['meta']['profilerdonation_pledgesourcecodemode'] !== "normal") {
+            // The source code is a value of a specified field
+            $pledgeSourceCode = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgesourcecodemode']);
 
-            } else {
-                // Regular behaviour
-                $pledgeSourceCode = $this->getDonationCode($feed, 'pledgesourcecode', $form);
-            }
-
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']] = $pledgeSourceCode;
-        }
-        
-        if($feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode'] !== "") {
-            // Pledge Acqusition code
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']] = $this->getDonationCode($feed, 'pledgeacquisitioncode', $form);
+        } else {
+            // Regular behaviour
+            $pledgeSourceCode = $this->getDonationCode($feed, 'pledgesourcecode', $form);
         }
 
-        if($feed['meta']['profilerdonation_userdefined_pledgetypeid'] !== "") {
-            // Pledge Type ID
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgetypeid']);
+        $postData['regularSourceCode'] = $pledgeSourceCode;
 
-            if(empty($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']])) {
-                // Default value if above field is empty
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgetypeid']] = $feed['meta']['profilerdonation_pledgetypeid_default'];
-            }
+        // Pledge Acqusition code
+        $postData['regularAcquiredReason'] = $this->getDonationCode($feed, 'pledgeacquisitioncode', $form);
+
+        // Pledge Type ID
+        $postData['regularType'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgetypeid']);
+
+        if(empty($postData['regularType'])) {
+            // Default value if above field is empty
+            $postData['regularType'] = $feed['meta']['profilerdonation_pledgetypeid_default'];
         }
 
-        if($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "" && $feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {
+        if($feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {
             // Client Acqusition code
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientacquisitioncode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientacquisitioncode']);
+            $postData['clientAcquiredReason'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientacquisitioncode']);
 
-        } else if ($feed['meta']['profilerdonation_userdefined_clientacquisitioncode'] !== "") {
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientacquisitioncode']] = $this->getDonationCode($feed, 'clientacquisitioncode', $form);
+        } else {
+            $postData['clientAcquiredReason'] = $this->getDonationCode($feed, 'clientacquisitioncode', $form);
         }
         
-        if($feed['meta']['profilerdonation_userdefined_donationpurposecode'] !== "" && $feed['meta']['profilerdonation_donationpurposecode'] !== "") {
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_donationpurposecode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
+        if($feed['meta']['profilerdonation_donationpurposecode'] !== "") {
+            $postData['paymentPupose'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
         }
 
-        if($feed['meta']['profilerdonation_userdefined_donationtagcode'] !== "" && $feed['meta']['profilerdonation_donationtagcode'] !== "") {
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_donationtagcode']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtagcode']);
+        if($feed['meta']['profilerdonation_donationtagcode'] !== "") {
+            $postData['paymentTag'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtagcode']);
         }
 
-        if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($entry['transaction_id'])) {
+        if(isset($entry['transaction_id'])) {
             // Gateway transaction id
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $entry['transaction_id'];
+            $postData['gatewayRepsonseId'] = $entry['transaction_id'];
         }
 
-        if($feed['meta']['profilerdonation_userdefined_gatewaytransactionid'] !== "" && isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'])) {
+        if(isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'])) {
             // PayFURL-supplied Gateway Response
             $payfurl_gateway_response = $_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'];
 
             if(!empty($payfurl_gateway_response)) {
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_gatewaytransactionid']] = $payfurl_gateway_response;
+                $postData['gatewayRepsonseId'] = $payfurl_gateway_response;
             }
         }
 
@@ -742,38 +582,30 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['maskcard'] = $_POST['payfurl_payment_details']['captured_payment']['masked_card_number'];
         }
 
-        if($feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod'] !== "") {
-            // Client Preferred Contact Method
-            $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientpreferredcontactmethod']] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientpreferredcontactmethod']);
-        }
+        // Client Preferred Contact Method
+        $postData['clientPreferredContactMethod'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientpreferredcontactmethod']);
 
-        if($feed['meta']['profilerdonation_userdefined_clientprivacypreference'] !== "") {
-            // Client Privacy Preference
-
-            $privacy_field_value = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientprivacypreference']);
-
-            if(!empty($privacy_field_value)) {
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_clientprivacypreference']] = 'true';
-            }
+        // Client Privacy Preference
+        $privacy_field_value = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_clientprivacypreference']);
+        if(!empty($privacy_field_value)) {
+            $postData['clientPrivacyPreference'] = 'true';
         }
 
         if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
             // Recurring donation
-            $postData['datatype'] = "PLG";
-            $postData['pledgetype'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
+            $postData['dataType'] = "PLG";
+            $postData['pledgeType'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgefreq']);
 
-            if(empty($postData['pledgetype'])) {
+            if(empty($postData['pledgeType'])) {
                 // We assume a monthly pledge if no frequency is specified
-                $postData['pledgetype'] = "monthly";
+                $postData['pledgeType'] = "monthly";
             }
 
-            if($feed['meta']['profilerdonation_userdefined_sourcecode'] !== "") {
-                // If it's recurring, the donation gets the pledge source code instead of the donation code
-                $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']] = $this->getDonationCode($feed, 'pledgesourcecode', $form);
-            }
+            // If it's recurring, the donation gets the pledge source code instead of the donation code
+            $postData['donationSourceCode'] = $this->getDonationCode($feed, 'pledgesourcecode', $form);
 
             // Store the donation type
-            gform_add_meta($entry["id"], "profiler_type", "regular", $form_id);
+            gform_add_meta($entry["id"], "profiler_type", "regular", $form['id']);
 
         } elseif($useAsGateway == false) {
             // Once-off donation (not using Profiler as the gateway)
@@ -785,8 +617,8 @@ class GFProfilerDonate extends GFProfilerCommon {
             }
 
             unset($postData['pledgeamount']);
-            unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgeacquisitioncode']]);
-            unset($postData['userdefined' . $feed['meta']['profilerdonation_userdefined_pledgesourcecode']]);
+            unset($postData['regularAcquiredReason']);
+            unset($postData['regularSourceCode']);
 
         } else {
             // Store the donation type
@@ -809,9 +641,9 @@ class GFProfilerDonate extends GFProfilerCommon {
             unset($postData['ccv']);
             unset($postData['cardexpiry']);
 
-            $postData['bankaccountname'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountname"]);
-            $postData['bankbsb'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_bsb"]);
-            $postData['bankaccountnumber'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountnumber"]);
+            $postData['bsbAccName'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountname"]);
+            $postData['bsb'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_bsb"]);
+            $postData['bsbAccNum'] = $this->get_field_value($form, $entry, $feed['meta']["profilerdonation_bankdebit_accountnumber"]);
             
         } elseif($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "paypal") {
             // PayPal within Profiler requires this value in the 'maskcard' field
@@ -828,18 +660,17 @@ class GFProfilerDonate extends GFProfilerCommon {
 
     public function process_feed_success($feed, $entry, $form, $pfResponse, $postData) {
 
-        if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
-            // Profiler failed. Send the failure email.
-            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profiler_erroremailaddress']);
-
-        } else {
+        if(isset($pfResponse['dataArray']['success']) && $pfResponse['dataArray']['success'] === true) {
             // Store the Integration ID as meta so we can use it later
-            if(isset($pfResponse['dataArray']['id'])) {
-                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form['id']);
-                gform_add_meta($entry["id"], "profiler_sourcecode", $postData['userdefined' . $feed['meta']['profilerdonation_userdefined_sourcecode']], $form['id']);
+            if(isset($pfResponse['dataArray']['integrationId'])) {
+                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['integrationId'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_integration_guid", $pfResponse['dataArray']['integrationGuid'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_sourcecode", $postData['donationSourceCode'], $form['id']);
             }
+        } else {
+            // Profiler failed. Send the failure email.
+            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']["profiler".$this->gffield_legacyname."_erroremailaddress"]);
         }
-
     }
 
     public function validate_payment($gform_validation_result) {
