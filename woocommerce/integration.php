@@ -23,6 +23,9 @@ class WC_Integration_Profiler extends WC_Integration {
 		$this->dbname                      = $this->get_option( 'dbname' );
         $this->apikey                      = $this->get_option( 'apikey' );
 
+        // Upgrade config to new domain
+        $this->instancedomainname = str_replace(".profilersystem.com", ".profilersoftware.com", $this->instancedomainname);
+
 		// Actions.
 		add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
 
@@ -53,7 +56,7 @@ class WC_Integration_Profiler extends WC_Integration {
 			'instancedomainname' => array(
 				'title'             => 'Profiler Instance Domain Name',
 				'type'              => 'text',
-				'description'       => 'e.g. example.profilersystem.com',
+				'description'       => 'e.g. example.profilersoftware.com',
 				'desc_tip'          => true,
 				'default'           => '',
 			),
@@ -84,30 +87,6 @@ class WC_Integration_Profiler extends WC_Integration {
 				'description'       => '',
 				'desc_tip'          => true,
 				'default'           => ''
-			),
-            'udf_sourcecode' => array(
-				'title'             => 'UDF: Donation Source Code',
-				'type'              => 'select',
-				'description'       => '',
-				'desc_tip'          => true,
-				'default'           => '',
-                'options'           => $this->options_udf(),
-			),
-            'udf_clientip' => array(
-				'title'             => 'UDF: Client IP Address',
-				'type'              => 'select',
-				'description'       => '',
-				'desc_tip'          => true,
-				'default'           => '',
-                'options'           => $this->options_udf(),
-			),
-            'udf_transactionid' => array(
-				'title'             => 'UDF: Gateway Transaction ID',
-				'type'              => 'select',
-				'description'       => '',
-				'desc_tip'          => true,
-				'default'           => '',
-                'options'           => $this->options_udf(),
 			),
 		);
 	}
@@ -203,21 +182,19 @@ class WC_Integration_Profiler extends WC_Integration {
         $order_comment .= "WooCommerce Payment Method: " . $order->get_payment_method_title() . "; ";
 
         // Build API payload
-        $url = 'https://' . $this->instancedomainname . '/ProfilerAPI/Legacy/';
+        $url = 'https://' . $this->instancedomainname . '/ProfilerAPI/RapidEndpoint/';
         $profiler_data = array(
-            'DB' => $this->dbname,
-            'apikey' => $this->apikey,
-            'apipass' => $this->get_option('apipass'),
-            'method' => 'integration.send',
+            'apiuser' => $this->apikey,
+            'apipassword' => $this->get_option('apipass'),
             'datatype' => 'OLDON',
 
             'amount' => $total,
-            'donationamount' => $total,
-            'sourcecode' => $this->get_option('sourcecode'),
+            'donationAmount' => $total,
+            'donationSourceCode' => $this->get_option('sourcecode'),
             'status' => 'Approved',
 
             'clientname' => $first_name . ' ' . $last_name,
-            'firstname' => $first_name,
+            'firstName' => $first_name,
             'surname' => $last_name,
 
             'email' => $email,
@@ -232,25 +209,19 @@ class WC_Integration_Profiler extends WC_Integration {
             'comments' => $order_comment,
         );
 
-        if($this->get_option('udf_sourcecode') != '') {
-            // Source code as a UDF
-            $profiler_data['userdefined' . $this->get_option('udf_sourcecode')] = $this->get_option('sourcecode');
-        }
+        // Source code as a UDF
+        $profiler_data['donationSourceCode'] = $this->get_option('sourcecode');
 
         if($order->needs_payment()) {
             // Change status for payment pending
             $profiler_data['status'] = 'Pending';
         }
 
-        if($this->get_option('udf_clientip') != '') {
-            // Client IP Address
-            $profiler_data['userdefined' . $this->get_option('udf_clientip')] = $this->get_client_ip_address();
-        }
+        // Client IP Address
+        $profiler_data['requestIPAddress'] = $this->get_client_ip_address();
 
-        if($this->get_option('udf_transactionid') != '') {
-            // Payment Gateway Transaction ID
-            $profiler_data['userdefined' . $this->get_option('udf_transactionid')] = $order->get_transaction_id();
-        }
+        // Payment Gateway Transaction ID
+        $profiler_data['gatewayResponseId'] = $order->get_transaction_id();
 
         // Push data to Profiler
         $api_result = $this->api_profiler($url, $profiler_data);
@@ -349,10 +320,10 @@ class WC_Integration_Profiler extends WC_Integration {
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query(array("DB" => $profiler_query['DB'], "Call" => 'submit')));
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen(http_build_query($profiler_query))));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($profiler_query));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($profiler_query));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         if($ssl_mode == "bundled_ca") {
@@ -385,21 +356,10 @@ class WC_Integration_Profiler extends WC_Integration {
             "httpstatus" => $status_code,
             "dataSent" => $profiler_query,
             "data" => $result,
-            "dataXML" => simplexml_load_string($result),
-            "dataArray" => json_decode(json_encode((array)simplexml_load_string($result)), 1),
+            "dataArray" => json_decode($result, true),
             "cURLError" => $cURL_error,
             "cURL_SSL_Mode" => $ssl_mode,
         );
-    }
-
-    private function options_udf() {
-        $fields = array("0" => "");
-
-        for($i = 1; $i <= 99; $i++) {
-            $fields[$i] = "User Defined Field " . $i;
-        }
-
-        return $fields;
     }
 
     private function get_client_ip_address() {
