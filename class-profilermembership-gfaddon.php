@@ -9,12 +9,14 @@ class GFProfilerMembership extends GFProfilerDonate {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerAPI/Legacy/";
-    protected $apifield_apikey = "apikey";
-    protected $apifield_apipass = "apipass";
-    protected $apifield_ipaddress = 'udf';
-    protected $apifield_formurl = true;
-    protected $gffield_legacyname = "membership";
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/RapidEndpoint/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
+    protected $gffield_legacyname = "donation";
 
     public static function get_instance() {
         if (self::$_instance == null) {
