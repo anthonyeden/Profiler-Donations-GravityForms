@@ -28,6 +28,9 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_stripe_charge_pre_create',        array($this, 'stripe_payment_intent'), 10, 5);
         add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
         add_filter('gform_stripe_payment_element_initial_payment_information', array($this, 'stripe_elements_setup'), 10, 3);
+
+        // Metabox for Profiler Logs
+        add_filter('gform_entry_detail_meta_boxes',         array($this, 'meta_box_entry'), 10, 3);
     }
 
     public function feed_settings_fields() {
@@ -207,15 +210,6 @@ class GFProfilerCommon extends GFFeedAddOn {
             }
         }
 
-        $fields[] = array(
-            "label" => 'Profiler Logs',
-            "type" => "select",
-            "name" => "profiler".$this->gffield_legacyname."_logs",
-            "tooltip" => 'Link it to a Hidden field that will hold Profiler Response Logs',
-            "required" => false,
-            "choices" => $hiddenFields
-        );
-        
         $fields[] = array(
             "label" => 'SSL Mode',
             "type" => "select",
@@ -435,14 +429,12 @@ class GFProfilerCommon extends GFFeedAddOn {
             $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
-            $entry[$feed['meta']["profiler".$this->gffield_legacyname."_logs"]] = htmlentities($logsToStore);
-            GFAPI::update_entry($entry);
-
             gform_add_meta($entry["id"], "profiler_logs", $logsToStore, $form['id']);
 
             if(method_exists($this, 'process_feed_success')) {
                 $this->process_feed_success($feed, $entry, $form, $pfResponse, $postData);
-            }   
+            }
+
         } else {
             return $pfResponse;
         }
@@ -1084,6 +1076,48 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         return $description;
 
+    }
+
+    public function meta_box_entry($meta_boxes, $entry, $form) {
+        // Custom Metabox
+
+        if($this->get_active_feeds($form['id'])) {
+
+            $profiler_logs_meta = gform_get_meta($entry['id'], 'profiler_logs');
+
+            if(!empty($profiler_logs_meta)) {
+                $meta_boxes[$this->_slug] = array(
+                    'title'    => 'Profiler API',
+                    'callback' => array($this, 'meta_box_entry_render'),
+                    'context'  => 'side',
+                    'callback_args' => array($entry, $form),
+                );
+            }
+        }
+
+        return $meta_boxes;
+    }
+
+    public function meta_box_entry_render($data) {
+        // Render the Custom Metabox
+        $html = '';
+
+        $meta_fields = array(
+            "profiler_integrationid" => "Integration ID",
+            "profiler_integration_guid" => "Integration GUID",
+            "profiler_logs" => "Profiler API Logs",
+        );
+
+        foreach($meta_fields as $field_name => $field_title) {
+
+            $meta_value = gform_get_meta($data['entry']['id'], $field_name);
+
+            if(!empty($meta_value)) {
+                $html .= '<p><strong>'.$field_title.'</strong>:<br /><pre style="width: 100%; overflow-x: scroll;">'.esc_html($meta_value).'</pre></p>';
+            }
+        }
+
+        echo $html;
     }
 }
 
