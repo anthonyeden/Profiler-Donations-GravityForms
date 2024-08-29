@@ -573,7 +573,7 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         if(isset($entry['transaction_id'])) {
             // Gateway transaction id
-            $postData['gatewayRepsonseId'] = $entry['transaction_id'];
+            $postData['gatewayResponseId'] = $entry['transaction_id'];
         }
 
         if(isset($_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'])) {
@@ -581,7 +581,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             $payfurl_gateway_response = $_POST['payfurl_payment_details']['captured_payment']['payfurl_transaction_id'];
 
             if(!empty($payfurl_gateway_response)) {
-                $postData['gatewayRepsonseId'] = $payfurl_gateway_response;
+                $postData['gatewayResponseId'] = $payfurl_gateway_response;
             }
         }
 
