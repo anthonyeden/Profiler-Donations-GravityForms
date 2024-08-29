@@ -315,7 +315,15 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_comments",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "comments",
+        );
+
+        $fields[] = array(
+            "label" => 'Extra Comments Text',
+            "type" => "textarea",
+            "name" => "profilerdonation_commentsextra",
+            "required" => false,
+            "class" => "merge-tag-support",
+            "tooltip" => "This is extra text to be sent to Profiler as an Interaction. Protip: Include Gravity Forms Merge Fields in this textarea to accept user input.",
         );
 
         $fields[] = array(
@@ -590,6 +598,23 @@ class GFProfilerDonate extends GFProfilerCommon {
         if(!empty($privacy_field_value)) {
             $postData['clientPrivacyPreference'] = 'true';
         }
+
+        // Comments field
+        $comments = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
+
+        if(!empty($feed['meta']['profilerdonation_commentsextra'])) {
+            // Extra text to append to comments field
+            $comments .= GFCommon::replace_variables($feed['meta']['profilerdonation_commentsextra'], $form, $entry, false, true, false, 'text');
+        }
+
+        $comments = html_entity_decode($comments);
+
+        // Only allow ASCII printable characters.
+        // This is a work-around to the API endpoint not allowing some characters
+        $comments = preg_replace('/[^\x20-\x7E]/','', $comments);
+
+        // Comments
+        $postData['comments'] = $comments;
 
         if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationtype']) == "regular") {
             // Recurring donation
