@@ -257,7 +257,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "choices" => $field_settings,
             "pf_apifield" => "phoneAH",
         );
-        
+
         $fields[] = array(
             "label" => 'Client: Business Phone',
             "type" => "select",
@@ -265,8 +265,9 @@ class GFProfilerDonate extends GFProfilerCommon {
             "required" => false,
             "choices" => $field_settings,
             "pf_apifield" => "phoneBus",
+            "auto_format" => "phone",
         );
-        
+
         $fields[] = array(
             "label" => 'Client: Mobile Phone',
             "type" => "select",
@@ -274,8 +275,19 @@ class GFProfilerDonate extends GFProfilerCommon {
             "required" => false,
             "choices" => $field_settings,
             "pf_apifield" => "phoneMobile",
+            "auto_format" => "phone",
         );
-        
+
+        $fields[] = array(
+            "label" => 'Client: Phone',
+            "type" => "select",
+            "name" => "profilerdonation_clientphonemobile",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "phoneMobile",
+            "auto_format" => "phone",
+        );
+
         $fields[] = array(
             "label" => 'Client: Website',
             "type" => "select",

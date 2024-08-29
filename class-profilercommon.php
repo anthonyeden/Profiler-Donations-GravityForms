@@ -283,6 +283,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         foreach($fields as $field) {
             if(isset($field['pf_apifield']) && $this->get_field_value($form, $entry, $feed['meta'][$field['name']]) != '') {
                 $postData[$field['pf_apifield']] = trim($this->get_field_value($form, $entry, $feed['meta'][$field['name']]));
+
+                // Auto formatting for phone fields
+                if(isset($field['auto_format']) && $field['auto_format'] == "phone") {
+                    $postData[$field['pf_apifield']] = $this->auto_format_phone($postData[$field['pf_apifield']]);
+                }
             }
         }
 
@@ -1118,6 +1123,48 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         echo $html;
+    }
+
+    private function auto_format_phone($phone_number_original) {
+        // This function auto-formats a phone number into an Australian format (0000 000 000 or 00 0000 0000)
+
+        // Remove certain characters
+        $phone_number = str_replace(array(" ", "-", "(", ")"), array("", "", "", ""), $phone_number_original);
+
+        // Remove +61 prefix
+        if(substr($phone_number, 0, 3) == "+61") {
+            $phone_number = substr($phone_number, 3);
+
+            if(strlen($phone_number) === 9) {
+                $phone_number = "0" . $phone_number;
+            }
+        }
+
+        // International number. Return as-is
+        if(substr($phone_number, 0, 1) == "+") {
+            return $phone_number;
+        }
+
+        // Probably an Australian number
+        if(strlen($phone_number) == 10) {
+            // 0000 000 000
+            if(substr($phone_number, 0, 2) == "04") {
+                $phone_number = substr($phone_number, 0, 4) . " " . substr($phone_number, 4, 3) . " " . substr($phone_number, 7);
+                return $phone_number;
+            }
+
+            // 00 0000 0000
+            $phone_number = substr($phone_number, 0, 2) . " " . substr($phone_number, 2, 4) . " " . substr($phone_number, 6);
+            return $phone_number;
+        }
+
+        // Probably Australian landline with no area prefix
+        if(strlen($phone_number) == 8) {
+            // Adjust to 0000 0000 format
+            $phone_number = substr($phone_number, 0, 4) . " " . substr($phone_number, 4);
+        }
+
+        return $phone_number;
     }
 }
 
