@@ -14,7 +14,7 @@ This guide will help you configure your Profiler system for RAPID integration wi
 *	[WordPress](https://wordpress.org) site with Administrative access
 *	[Gravity Forms](http://www.gravityforms.com)
 *	Payment Gateway integration with Gravity Forms (must be pre-existing and use standard Gravity Forms payment hooks and database fields)
-  * For Australian non-profits, we recommend the official Gravity Forms Stripe plugin
+  * We recommend the official Gravity Forms Stripe plugin
 *	Full administrative access to Profiler
 *	CURL and XML Enabled on Web Server
 
