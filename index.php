@@ -65,6 +65,10 @@ class ProfilerDonation_GF_Launch {
         //require_once('class-profilerevents-gfaddon.php');
         //GFAddOn::register('GFProfilerEvents');
 
+        // This is a settings screen to list all Profiler feeds in the system
+        require_once('class-feedlist-gfaddon.php');
+        GFAddOn::register('GF_Profiler_FeedList');
+
         // Include some random helper functions
         require_once(plugin_dir_path(__FILE__) . '/shortcodes.php');
         require_once(plugin_dir_path(__FILE__) . '/states_australia.php');
