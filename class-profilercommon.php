@@ -33,6 +33,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_entry_detail_meta_boxes',         array($this, 'meta_box_entry'), 10, 3);
     }
 
+    public function get_menu_icon() {
+		//return 'dashicons-admin-generic';
+        return plugins_url('icon-profiler.png', __FILE__);
+	}
+
     public function feed_settings_fields() {
         // This function adds all the feed setting fields we need to communicate with Profiler
         
