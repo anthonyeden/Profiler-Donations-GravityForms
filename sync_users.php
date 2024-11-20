@@ -231,7 +231,6 @@ class ProfilerUsers {
         $options = get_option($this->settings_prefix . 'settings');
 
         if(empty($options['auth_apikey']) || empty($options['auth_apipass']) || empty($options['pf_database']) || empty($options['pf_domain'])) {
-            $this->log("Profiler Users not configured correctly");
             return;
         }
 
