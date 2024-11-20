@@ -68,7 +68,7 @@ class GF_Profiler_FeedList extends GFAddOn {
             'profiler-lists-gf' => 'Mailing Lists (Advanced)',
             'profiler-listsbasic-gf' => 'Mailing Lists (Basic)',
             'profiler-membership-gf' => 'Membership',
-            'profiler-postdonate-gf' => 'Post-Donate',
+            'profiler-postdonation-gf' => 'Post-Donate',
             'profiler-update-gf' => 'Update Details',
         );
 
@@ -79,7 +79,7 @@ class GF_Profiler_FeedList extends GFAddOn {
             'profiler-lists-gf' => '',
             'profiler-listsbasic-gf' => '',
             'profiler-membership-gf' => 'donation',
-            'profiler-postdonate-gf' => 'donation',
+            'profiler-postdonation-gf' => 'donation',
             'profiler-update-gf' => 'update',
         );
 
