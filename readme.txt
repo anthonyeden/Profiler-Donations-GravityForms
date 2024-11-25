@@ -22,6 +22,17 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.5.0 =
+
+* Use the new Profiler Core API for Donations/payments. This removes the UDF field config and automates it within Profiler.
+* Create 'Profiler Feed List' setting screen, for quick access to all configured feeds on your site
+* Remove Profiler Logs fields, and move these to an entry metabox.
+* Donation Feed: Add Extra Comments field
+* Donation Feed: Automatic formatting of Australian phone numbers
+* Add Profiler icon to all Feeds
+* Donation Feed: Add new fields for gender, interactions, roles, membership mapping and payment split text.
+* Membership Feed: Hide manual payment fields if Profiler-driven payments has been disabled
+
 = 2.4.3 =
 
 * Add support for PayFURL
