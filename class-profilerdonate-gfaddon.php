@@ -185,6 +185,16 @@ class GFProfilerDonate extends GFProfilerCommon {
             "choices" => $field_settings,
             "pf_apifield" => "surname",
         );
+
+        $fields[] = array(
+            "label" => 'Client: Gender',
+            "type" => "select",
+            "name" => "profilerdonation_clientgender",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "clientGender",
+            "tooltip" => "Gender values are defined in Profiler in Setup > Client > Gender.",
+        );
         
         $fields[] = array(
             "label" => 'Client: Email',
@@ -335,7 +345,67 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_commentsextra",
             "required" => false,
             "class" => "merge-tag-support",
-            "tooltip" => "This is extra text to be sent to Profiler as an Interaction. Protip: Include Gravity Forms Merge Fields in this textarea to accept user input.",
+            "tooltip" => "This is extra text to be sent to Profiler in the Comments field. Youc an include Gravity Forms Merge Fields in this textarea to accept additional user input.",
+        );
+
+        $fields[] = array(
+            "label" => 'Interaction: Type',
+            "type" => "select",
+            "name" => "profilerdonation_interaction_type",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "interactionType",
+            "tooltip" => "If you wish to setup an Interaction, specify your Interaction Type here, and your Interaction Text below. This is separate to the 'Comments' field above.",
+        );
+
+        $fields[] = array(
+            "label" => 'Interaction: Text',
+            "type" => "select",
+            "name" => "profilerdonation_interaction_text",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "interactionText",
+            "tooltip" => "If you wish to setup an Interaction, specify your Interaction Text here, and your Interaction Type above. This is separate to the 'Comments' field above.",
+        );
+
+        $fields[] = array(
+            "label" => 'Interaction: Tag',
+            "type" => "select",
+            "name" => "profilerdonation_interaction_tag",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "interactionTag",
+            "tooltip" => "If you wish to setup an Interaction, specify your Interaction Text and Interaction Type above, and your Interaction Tag here. This is separate to the 'Comments' field above.",
+        );
+
+        $fields[] = array(
+            "label" => 'Interaction: Sub-Tag',
+            "type" => "select",
+            "name" => "profilerdonation_interaction_subtag",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "interactionSubTag",
+            "tooltip" => "If you wish to setup an Interaction, specify your Interaction Text and Interaction Type above, and your Interaction Sub-Tag here. This is separate to the 'Comments' field above.",
+        );
+
+        $fields[] = array(
+            "label" => 'Role: Add Role By Role Name',
+            "type" => "select",
+            "name" => "profilerdonation_role_name",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "roleName",
+            "tooltip" => "If you wish to add a Role to a Client by Role Name, enter the Role Name here.",
+        );
+
+        $fields[] = array(
+            "label" => 'Role: Add Role By Role ID',
+            "type" => "select",
+            "name" => "profilerdonation_role_id",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "roleId",
+            "tooltip" => "If you wish to add a Role to a Client by Role ID, enter the Role ID here.",
         );
 
         $fields[] = array(
@@ -427,7 +497,27 @@ class GFProfilerDonate extends GFProfilerCommon {
             "tooltip" => "This field's value should match the Tag Codes setup within Profiler.",
             "choices" => $field_settings
         );
-        
+
+        $fields[] = array(
+            "label" => 'Interaction: Membership/Regular Mapping Text',
+            "type" => "select",
+            "name" => "profilerdonation_membership_mapping_text",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "membershipMappingText",
+            "tooltip" => "If you configure a 'Membership/Regular Type Map' in Profiler, you can use this field to perform the Mapping.",
+        );
+
+        $fields[] = array(
+            "label" => 'Payment Split-Out Text',
+            "type" => "select",
+            "name" => "profilerdonation_payment_split_out_text",
+            "required" => false,
+            "choices" => $field_settings,
+            "pf_apifield" => "splitOutText",
+            "tooltip" => "In Profiler, you can setup a text mapping for a Split / Breakdown Payment. If configured, it uses the text in this field to perform the split. For example, a Payment comes in for 100 and split is setup in Profiler for word POSTAGE, the payment recorded in Profiler will have separate amounts for two source codes.",
+        );
+
         $fields[] = array(
             "label" => 'Client Preferred Contact Method Field',
             "type" => "select",
