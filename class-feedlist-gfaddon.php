@@ -107,6 +107,10 @@ class GF_Profiler_FeedList extends GFAddOn {
 
             $form = GFAPI::get_form($feed['form_id']);
 
+            if($form === false) {
+                continue;
+            }
+
             $found_feeds = true;
 
             $html .= '
@@ -114,7 +118,7 @@ class GF_Profiler_FeedList extends GFAddOn {
                 <td>'.esc_html($feed['form_id']).'</td>
                 <td><a href="'.esc_url('admin.php?page=gf_edit_forms&id=' . $feed['form_id']).'">'.esc_html($form['title']).'</a></td>
                 <td>'.esc_html($feed['id']).'</td>
-                <td><a href="'.esc_url('admin.php?subview='.$feed['addon_slug'].'&page=gf_edit_forms&id=3&view=settings&fid=' . $feed['id']).'">'.esc_html($feed['meta']['feedName']).'</a></td>
+                <td><a href="'.esc_url('admin.php?subview='.$feed['addon_slug'].'&page=gf_edit_forms&id='.$form['id'].'&view=settings&fid=' . $feed['id']).'">'.esc_html($feed['meta']['feedName']).'</a></td>
                 <td>'.esc_html($feed_types[$feed['addon_slug']]).'</td>
                 <td>'.($feed['is_active'] == true ? 'Active' : 'Inactive').'</td>
                 <td>'.esc_html($feed['meta']['profiler' . $legacy_field_names[$feed['addon_slug']] . '_instancedomainname']).'</td>
