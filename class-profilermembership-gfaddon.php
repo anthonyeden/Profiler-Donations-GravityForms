@@ -44,50 +44,55 @@ class GFProfilerMembership extends GFProfilerDonate {
 
         $fields = parent::feed_settings_fields_custom();
 
-        foreach($fields as $fieldKey => $fieldVal) {
-            if($fieldVal['label'] == "Use Profiler As A Gateway?") {
-                $fields[$fieldKey]['choices'][] = array(
-                    'label'         => 'Manual - Profiler will Process Payments, manually later on via a Pledge',
-                    'value'         => 'manual',
-                );
+        if(apply_filters('profiler_integration_allow_profiler_gateway', true) == true) {
+            // This filter allows us to disable the Profiler Gateway feature on a site
+
+            foreach($fields as $fieldKey => $fieldVal) {
+                if($fieldVal['label'] == "Use Profiler As A Gateway?") {
+                    $fields[$fieldKey]['choices'][] = array(
+                        'label'         => 'Manual - Profiler will Process Payments, manually later on via a Pledge',
+                        'value'         => 'manual',
+                    );
+                }
             }
+
+            $fields[] = array(
+                "label" => 'UDF: Stored Card Number',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_storedcard_number",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to store the card number in",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'UDF: Stored Card Expiry',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_storedcard_expiry",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to store the card expiry in",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'UDF: Stored Card CCV',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_storedcard_ccv",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to store the card CCV in",
+                "choices" => $userdefinedfields,
+            );
+
+            $fields[] = array(
+                "label" => 'UDF: Stored Card Name',
+                "type" => "select",
+                "name" => "profilerdonation_userdefined_storedcard_name",
+                "required" => false,
+                "tooltip" => "Pick the Profiler User Defined Field you wish to store the card name in",
+                "choices" => $userdefinedfields,
+            );
+
         }
-
-        $fields[] = array(
-            "label" => 'UDF: Stored Card Number',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_storedcard_number",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish to store the card number in",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Stored Card Expiry',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_storedcard_expiry",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish to store the card expiry in",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Stored Card CCV',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_storedcard_ccv",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish to store the card CCV in",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Stored Card Name',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_storedcard_name",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish to store the card name in",
-            "choices" => $userdefinedfields,
-        );
 
         return $fields;
 
