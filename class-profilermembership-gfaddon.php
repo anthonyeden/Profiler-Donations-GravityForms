@@ -16,7 +16,7 @@ class GFProfilerMembership extends GFProfilerDonate {
     protected $apifield_apipass = "apipassword";
     protected $apifield_ipaddress = 'requestIPAddress';
     protected $apifield_formurl = 'pageURL';
-    protected $gffield_legacyname = "donation";
+    protected $gffield_legacyname = "membership";
 
     public static function get_instance() {
         if (self::$_instance == null) {
