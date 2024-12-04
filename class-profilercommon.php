@@ -792,7 +792,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         $message .= "This is the data that was sent to the Profiler API:\r\n";
 
         foreach($pfResponse['dataSent'] as $key => $val) {
-            if($key == "apikey" || $key == "apipass" || $key == "cardnumber" || $key == "api_user" || $key == "api_pass" || $key == $this->apifield_apikey || $key == $this->apifield_apipass) {
+            if($key == "apikey" || $key == "apipass" || $key == "apipassword" || $key == "cardnumber" || $key == "api_user" || $key == "api_pass" || $key == $this->apifield_apikey || $key == $this->apifield_apipass) {
                 $val = "--REDACTED--";
             }
             $message .= $key . ": " . $val . "\r\n";
