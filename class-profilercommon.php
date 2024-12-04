@@ -165,7 +165,7 @@ class GFProfilerCommon extends GFFeedAddOn {
                         "type" => "text",
                         "name" => "profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext",
                         "required" => false,
-                        "tooltip" => "Enter the string Profiler is expecting in this UDF",
+                        "tooltip" => ($this->api_type == 'json' ? "Enter the Profiler Mailing Type Code" : "Enter the string Profiler is expecting in this UDF") . ". This field also accept post meta merge fields in this format: {postmeta:meta_field_name}",
                     );
 
                     $fields[] = array(
@@ -386,6 +386,27 @@ class GFProfilerCommon extends GFFeedAddOn {
                 // Loop over mailing list fields
                 $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_field"]);
                 $udfText = $feed['meta']["profiler".$this->gffield_legacyname."_mailinglist_".$i."_udftext"];
+
+                // Allow merging post meta fields into $udfText
+                if(isset($entry['post_id']) && !empty($entry['post_id'])) {
+                    $post_id = $entry['post_id'];
+                } else {
+                    global $post;
+                    if(isset($post)) {
+                        $post_id = $post->ID;
+                    }
+                }
+
+                if(isset($post_id)) {
+                    preg_match_all("/{postmeta:(.*?)}/", $udfText, $matches);
+
+                    if(is_array($matches) && isset($matches[1])) {
+                        foreach($matches[1] as $match) {
+                            $post_meta = get_post_meta($post_id, $match, true);
+                            $udfText = str_replace("{postmeta:".$match."}", $post_meta, $udfText);
+                        }
+                    }
+                }
 
                 if($this->api_type == 'json') {
 
