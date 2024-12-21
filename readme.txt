@@ -24,6 +24,8 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 = 2.5.0 =
 
+This is a substantial update. Please backup your site before upgrading, and test all your integrations thoroughly after upgrading this plugin.
+
 * Use the new Profiler Core API for Donations/payments. This removes the UDF field config and automates it within Profiler.
 * Create 'Profiler Feed List' setting screen, for quick access to all configured feeds on your site
 * Remove Profiler Logs fields, and move these to an entry metabox.
