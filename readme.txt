@@ -31,7 +31,7 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 * Donation Feed: Automatic formatting of Australian phone numbers
 * Add Profiler icon to all Feeds
 * Donation Feed: Add new fields for gender, interactions, roles, membership mapping and payment split text.
-* Membership Feed: Hide manual payment fields if Profiler-driven payments has been disabled
+* Membership Feed: Hide manual payment fields if Profiler-driven payments have been disabled
 
 = 2.4.3 =
 

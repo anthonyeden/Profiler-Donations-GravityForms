@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms + Profiler Add-On
 Plugin URI: https://mediarealm.com.au/
 Description: Integrates Gravity Forms with Profiler, enabling donation data and more to be sent directly to Profiler.
-Version: 2.5.0-beta
+Version: 2.5.0
 
 Author: Media Realm
 Author URI: https://www.mediarealm.com.au/
