@@ -1,8 +1,8 @@
 === Profiler Integration for Gravity Forms ===
 Contributors: anthonyeden
 Tags: gravity-forms, fundraising, crm, donation, profiler
-Requires at least: 5.0
-Tested up to: 6.0.0
+Requires at least: 6.0
+Tested up to: 6.7.1
 Stable tag: trunk
 Requires PHP: 7.4.0
 License: GPLv2 or later
