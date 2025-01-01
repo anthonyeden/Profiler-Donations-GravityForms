@@ -440,15 +440,18 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if(isset($postData['apiurl_override'])) {
             $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . $postData['apiurl_override'];
-            unset($postData['apiurl_override']);
         }
 
         // Allow filtering the Profiler request
         $postData = apply_filters('profiler_integration_api_request_data', $postData, $form, $entry, $this->apifield_endpoint);
 
         // Update URL for newer APIs
-        if($this->api_domain !== 'profilersystem.com') {
+        if($this->api_domain !== 'profilersystem.com' && !isset($profiler_query['apiurl_override'])) {
             $API_URL = str_replace(".profilersystem.com", "." . $this->api_domain, $API_URL);
+        }
+
+        if(isset($postData['apiurl_override'])) {
+            unset($postData['apiurl_override']);
         }
 
         // Send data to Profiler
@@ -720,6 +723,12 @@ class GFProfilerCommon extends GFFeedAddOn {
             $url .= '?' . http_build_query(array("DB" => $profiler_query['DB'], "Call" => 'submit'));
         }
 
+        $api_type = $this->api_type;
+
+        if(isset($profiler_query['apiurl_override'])) {
+            $api_type = 'xml';
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -736,7 +745,7 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         }
 
-        if($this->api_type === 'json') {
+        if($api_type === 'json') {
             // JSON POST
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($profiler_query));
             curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -758,7 +767,7 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         curl_close($ch);
 
-        if($this->api_type === 'json') {
+        if($api_type === 'json') {
             $data_decoded = json_decode($result, true);
         } else {
             $data_decoded = json_decode(json_encode((array)simplexml_load_string($result)), true);
