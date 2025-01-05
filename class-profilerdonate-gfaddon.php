@@ -588,7 +588,8 @@ class GFProfilerDonate extends GFProfilerCommon {
         if($useAsGateway == true) {
             // Profiler processes this payment
             $postData['method'] = "gateway.payment";
-            $postData['apiurl_override'] = "/ProfilerAPI/payments/";
+            $postData['apiurl_override'] = 'https://' . str_replace(".profilersystem.com", ".profilersoftware.com", $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname']) . "/ProfilerAPI/payments/";
+            $postData['apipass'] = $feed['meta']['profiler'.$this->gffield_legacyname.'_apipass'];
         } else {
             // Profiler will just record integration data
             $postData['dataType'] = "OLDON";
@@ -749,7 +750,7 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         } else {
             // Store the donation type
-            gform_add_meta($entry["id"], "profiler_type", "onceoff", $form_id);
+            gform_add_meta($entry["id"], "profiler_type", "onceoff", $form['id']);
         }
         
         if($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_paymentmethod']) == "bankdeposit") {
@@ -851,7 +852,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         // Send the data through to process_feed with a special flag that makes it try to take the money
         $result = $this->process_feed($feed, $entry, $form, true);
 
-        if($result['dataArray']['gateway']['response'] == "True") {
+        if(isset($result['dataArray']['gateway']['response']) && $result['dataArray']['gateway']['response'] == "True") {
             // The form passed validation. Good times.
             $gform_validation_result['is_valid'] = true;
 

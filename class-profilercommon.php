@@ -316,7 +316,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             $postData[$this->apifield_formurl] = $entry['source_url'];
         }
 
-        if(substr($entry['transaction_id'], 0, 3) == "pi_") {
+        if(isset($entry['transaction_id']) && substr($entry['transaction_id'], 0, 3) == "pi_") {
             // Stripe Payment - find the Customer ID and Card ID, and pass it to the PF API
 
             try {
@@ -439,19 +439,15 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         if(isset($postData['apiurl_override'])) {
-            $API_URL = "https://" . $feed['meta']['profiler'.$this->gffield_legacyname.'_instancedomainname'] . $postData['apiurl_override'];
+            $API_URL = $postData['apiurl_override'];
         }
 
         // Allow filtering the Profiler request
         $postData = apply_filters('profiler_integration_api_request_data', $postData, $form, $entry, $this->apifield_endpoint);
 
         // Update URL for newer APIs
-        if($this->api_domain !== 'profilersystem.com' && !isset($profiler_query['apiurl_override'])) {
+        if($this->api_domain !== 'profilersystem.com' && !isset($postData['apiurl_override'])) {
             $API_URL = str_replace(".profilersystem.com", "." . $this->api_domain, $API_URL);
-        }
-
-        if(isset($postData['apiurl_override'])) {
-            unset($postData['apiurl_override']);
         }
 
         // Send data to Profiler
@@ -748,7 +744,7 @@ class GFProfilerCommon extends GFFeedAddOn {
         if($api_type === 'json') {
             // JSON POST
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($profiler_query));
-            curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
         } else {
             // FORM POST
@@ -781,7 +777,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             "dataArray" => $data_decoded,
             "cURLError" => $cURL_error,
             "cURL_SSL_Mode" => $ssl_mode,
-            "api_type" => $this->api_type,
+            "api_type" => $api_type,
         );
     }
 
