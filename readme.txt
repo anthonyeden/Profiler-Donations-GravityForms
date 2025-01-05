@@ -22,6 +22,10 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.5.1 =
+
+* Bug Fix: Fix a problem introduced in 2.5.0 when using Profiler as a Gateway
+
 = 2.5.0 =
 
 This is a substantial update. Please backup your site before upgrading, and test all your integrations thoroughly after upgrading this plugin.
