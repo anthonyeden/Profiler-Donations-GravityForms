@@ -22,6 +22,12 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.5.2 =
+
+Please backup your site before upgrading, and test all your integrations thoroughly after upgrading this plugin. If you experience trouble, please roll back to a previous version of your site.
+
+* Fix a problem in Gravity Forms v2.9.1 where a payment feed's Transaction ID wasn't being sent to Profiler
+
 = 2.5.1 =
 
 * Bug Fix: Fix a problem introduced in 2.5.0 when using Profiler as a Gateway
