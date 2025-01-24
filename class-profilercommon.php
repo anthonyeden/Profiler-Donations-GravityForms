@@ -29,6 +29,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
         add_filter('gform_stripe_payment_element_initial_payment_information', array($this, 'stripe_elements_setup'), 10, 3);
 
+        // Workaround for change/bug introduced in v2.9.1
+        // See https://community.gravityforms.com/t/gf-2-9-stripe-transaction-id-in-gffeedaddon-empty/18770
+        remove_filter('gform_entry_post_save', array($this, 'maybe_process_feed'), 10);
+        add_filter('gform_entry_post_save', array($this, 'maybe_process_feed'), 12, 2);
+
         // Metabox for Profiler Logs
         add_filter('gform_entry_detail_meta_boxes',         array($this, 'meta_box_entry'), 10, 3);
     }
