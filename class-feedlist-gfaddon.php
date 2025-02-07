@@ -40,7 +40,7 @@ class GF_Profiler_FeedList extends GFAddOn {
         $sections = array(
             array(
                 'title'  => 'Profiler Feeds',
-                'description' => 'This section lists all the Profiler feeds on your site.',
+                'description' => 'This section lists all the Profiler feeds on your site. Only Active forms are displayed. Inactive and Trashed forms are not shown in this list.',
                 'capability' => 'gravityforms_edit_settings',
                 'fields' => array(
                     array(
@@ -108,6 +108,14 @@ class GF_Profiler_FeedList extends GFAddOn {
             $form = GFAPI::get_form($feed['form_id']);
 
             if($form === false) {
+                continue;
+            }
+
+            if($form['is_trash'] == true) {
+                continue;
+            }
+
+            if($form['is_active'] == false) {
                 continue;
             }
 
