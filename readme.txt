@@ -22,6 +22,11 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.5.3 =
+
+* Feed List: Don't show feeds for inactive forms and forms in the trash
+* Fix a fatal error when using Custom Fields in the Donation feed
+
 = 2.5.2 =
 
 Please backup your site before upgrading, and test all your integrations thoroughly after upgrading this plugin. If you experience trouble, please roll back to a previous version of your site.
