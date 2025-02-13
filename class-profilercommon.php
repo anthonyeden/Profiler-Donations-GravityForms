@@ -717,7 +717,9 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         // Remove whitespace
         foreach($profiler_query as $key => $val) {
-            $profiler_query[$key] = trim($val);
+            if(is_string($val)) {
+                $profiler_query[$key] = trim($val);
+            }
         }
 
         if(isset($profiler_query['DB'])) {
