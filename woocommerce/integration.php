@@ -146,6 +146,7 @@ class WC_Integration_Profiler extends WC_Integration {
         $first_name = $order->get_billing_first_name();
         $last_name = $order->get_billing_last_name();
         $email = $order->get_billing_email();
+        $phone_number = $order->get_billing_phone();
         $company_name = $order->get_billing_company();
 
         // Billing address
@@ -198,6 +199,7 @@ class WC_Integration_Profiler extends WC_Integration {
             'surname' => $last_name,
 
             'email' => $email,
+            'phoneMobile' => $phone_number,
 
             'address' => implode("\n", array($billing_address_1, $billing_address_2)),
             'suburb' => $billing_city,
