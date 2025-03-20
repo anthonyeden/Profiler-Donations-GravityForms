@@ -9,10 +9,16 @@ class GFProfilerLists extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerPROG/api/api_call.cfm";
-    protected $apifield_apikey = "apikey";
-    protected $apifield_apipass = "apipass";
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/SubscribeList/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
+
     protected $supports_custom_fields = true;
+    protected $supports_mailinglists = true;
 
     public static function get_instance() {
         if (self::$_instance == null) {
@@ -149,7 +155,8 @@ class GFProfilerLists extends GFProfilerCommon {
             "name" => "profilerlist_clientphoneah",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phoneah",
+            "pf_apifield" => "phoneAH",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -158,7 +165,8 @@ class GFProfilerLists extends GFProfilerCommon {
             "name" => "profilerlist_clientphonebus",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonebus",
+            "pf_apifield" => "phoneBus",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -167,7 +175,8 @@ class GFProfilerLists extends GFProfilerCommon {
             "name" => "profilerlist_clientphonemobile",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonemobile",
+            "pf_apifield" => "phoneMobile",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -179,104 +188,21 @@ class GFProfilerLists extends GFProfilerCommon {
             "pf_apifield" => "website",
         );
 
-        $fields[] = array(
-            "label" => 'Number of Mailing Lists',
-            "type" => "select",
-            "name" => "profilerlist_mailinglist_count",
-            "required" => false,
-            "tooltip" => "Select a quantity of Mailing Lists, save this page, and then configure them. You may need to refresh this page after saving to see the extra fields.",
-            "choices" => $mailingnumbers,
-            "default" => 0,
-        );
-
-        for($i = 1; $i <= $feed['meta']['profilerlist_mailinglist_count']; $i++) {
-            // Loop over mailing list fields
-
-            $fields[] = array(
-                "label" => 'Mailing List #'.$i.': UDF',
-                "type" => "select",
-                "name" => "profilerlist_mailinglist_".$i."_udf",
-                "required" => false,
-                "tooltip" => "Pick the Profiler User Defined Field you wish to use for this mailing",
-                "choices" => $userdefinedfields,
-            );
-
-            $fields[] = array(
-                "label" => 'Mailing List #'.$i.': UDF Text',
-                "type" => "text",
-                "name" => "profilerlist_mailinglist_".$i."_udftext",
-                "required" => false,
-                "tooltip" => "Enter the string Profiler is expecting in this UDF",
-            );
-
-            $fields[] = array(
-                "label" => 'Mailing List #'.$i.': Field',
-                "type" => "select",
-                "name" => "profilerlist_mailinglist_".$i."_field",
-                "tooltip" => 'Link it to a checkbox field - when checked, the mailing will be sent',
-                "required" => false,
-                "choices" => array_merge($checkboxRadioFields, array(array("value" => "always", "label" => "Always Subscribe"))),
-            );
-        }
-
-        $fields[] = array(
-            "label" => 'UDF: Client IP Address',
-            "type" => "select",
-            "name" => "profilerlist_userdefined_clientip",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
-            "choices" => $userdefinedfields,
-            "pf_apifield" => "",
-        );
-
-        $fields[] = array(
-            "label" => 'UDF: Form URL',
-            "type" => "select",
-            "name" => "profilerlist_userdefined_formurl",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation's form's URL to be sent to.",
-            "choices" => $userdefinedfields,
-            "pf_apifield" => "",
-        );
-
         return $fields;
         
     }
 
-    public function process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway = false) {
-
-        $postData['method'] = "integration.send";
-        $postData['datatype'] = "LISTS";
-        $postData['clientname'] = $postData['firstname'] . " " . $postData['surname'];
-
-        // Calculate mailing list subscriptions
-        for($i = 1; $i <= $feed['meta']['profilerlist_mailinglist_count']; $i++) {
-            // Loop over mailing list fields
-            $mailingFieldValue = $this->get_field_value($form, $entry, $feed['meta']["profilerlist_mailinglist_".$i."_field"]);
-            $udf = $feed['meta']["profilerlist_mailinglist_".$i."_udf"];
-            $udfText = $feed['meta']["profilerlist_mailinglist_".$i."_udftext"];
-
-            if(!empty($udf) && !empty($udfText) && (!empty($mailingFieldValue) || $feed['meta']["profilerlist_mailinglist_".$i."_field"] == "always")) {
-                $postData['userdefined' . $udf] = $udfText;
-            }
-
-        }
-
-        return $postData;
-    }
-
     public function process_feed_success($feed, $entry, $form, $pfResponse, $postData) {
-
-        if(!isset($pfResponse['dataArray']['status']) || $pfResponse['dataArray']['status'] != "Pass") {
-            // Profiler failed. Send the failure email.
-            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']['profiler_erroremailaddress']);
-
-        } else {
+        if(isset($pfResponse['dataArray']['success']) && $pfResponse['dataArray']['success'] === true) {
             // Store the Integration ID as meta so we can use it later
-            if(isset($pfResponse['dataArray']['id']))
-                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form['id']);
+            if(isset($pfResponse['dataArray']['integrationId'])) {
+                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['integrationId'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_integration_guid", $pfResponse['dataArray']['integrationGuid'], $form['id']);
+            }
+        } else {
+            // Profiler failed. Send the failure email.
+            $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']["profiler_erroremailaddress"]);
         }
-
     }
 
 }
