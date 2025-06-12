@@ -289,16 +289,6 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'Client: Phone',
-            "type" => "select",
-            "name" => "profilerdonation_clientphonemobile",
-            "required" => false,
-            "choices" => $field_settings,
-            "pf_apifield" => "phoneMobile",
-            "auto_format" => "phone",
-        );
-
-        $fields[] = array(
             "label" => 'Client: Website',
             "type" => "select",
             "name" => "profilerdonation_clientwebsite",
