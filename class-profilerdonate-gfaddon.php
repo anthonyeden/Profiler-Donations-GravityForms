@@ -499,7 +499,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'Interaction: Membership/Regular Mapping Text',
+            "label" => 'Membership/Regular Mapping Text',
             "type" => "select",
             "name" => "profilerdonation_membership_mapping_text",
             "required" => false,
