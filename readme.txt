@@ -22,6 +22,13 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.5.4 =
+
+* Mailing Lists (Advanced): Use the latest version of the Profiler API
+* Mailing Lists (Basic): Use the latest version of the Profiler API
+* WooCommerce: Send the order's Phone field to Profiler
+* Fix a bug with duplicate phone field config
+
 = 2.5.3 =
 
 * Feed List: Don't show feeds for inactive forms and forms in the trash
