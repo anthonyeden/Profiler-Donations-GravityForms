@@ -772,6 +772,11 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if($api_type === 'json') {
             $data_decoded = json_decode($result, true);
+
+            if($data_decoded === null) {
+                // In some cases (e.g. Mailing List Basic), Profiler accepts JSON but returns XML.
+                $data_decoded = json_decode(json_encode((array)simplexml_load_string($result)), true);
+            }
         } else {
             $data_decoded = json_decode(json_encode((array)simplexml_load_string($result)), true);
         }

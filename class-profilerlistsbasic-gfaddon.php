@@ -9,6 +9,7 @@ class GFProfilerListsBasic extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
+    protected $api_type = "json";
     protected $apifield_endpoint = "/ProfilerAPI/mailings/subscribe/";
     protected $apifield_apikey = "apiuser";
     protected $apifield_apipass = "apipass";
