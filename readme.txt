@@ -24,6 +24,8 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 = 2.5.4 =
 
+IMPORTANT: After upgrading, you will need to re-configure your 'Mailing Lists (Advanced)' feeds to re-add your mailing list codes. This is due to the removal of the UDF configuration.
+
 * Mailing Lists (Advanced): Use the latest version of the Profiler API
 * Mailing Lists (Basic): Use the latest version of the Profiler API
 * WooCommerce: Send the order's Phone field to Profiler
