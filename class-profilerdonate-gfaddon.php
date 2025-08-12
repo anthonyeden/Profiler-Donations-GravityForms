@@ -412,7 +412,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "type" => "text",
             "name" => "profilerdonation_sourcecode",
             "required" => false,
-            "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
+            "tooltip" => "Can be overriden by GET parameter or Short Code.",
         );
 
         $fields[] = array(
@@ -435,7 +435,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "type" => "text",
             "name" => "profilerdonation_pledgesourcecode",
             "required" => false,
-            "tooltip" => "Can be overriden by GET parameter or Short Code. Sent to the UDF specificed above.",
+            "tooltip" => "Can be overriden by GET parameter or Short Code.",
         );
 
         $fields[] = array(

@@ -29,6 +29,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
         add_filter('gform_stripe_payment_element_initial_payment_information', array($this, 'stripe_elements_setup'), 10, 3);
 
+        // Stripe - allow immediate refund upon payment success.
+        // Designed for Card Update workflows - preauth would be better, but the GF Stripe add-on has issues with this
+        add_filter('gform_form_settings_fields',                        array($this, 'stripe_refund_form_setting'), 10, 2);
+        add_action('gform_after_submission',                            array($this, 'stripe_refund_after_submission'), 10, 2);
+
         // Workaround for change/bug introduced in v2.9.1
         // See https://community.gravityforms.com/t/gf-2-9-stripe-transaction-id-in-gffeedaddon-empty/18770
         remove_filter('gform_entry_post_save', array($this, 'maybe_process_feed'), 10);
@@ -1125,6 +1130,97 @@ class GFProfilerCommon extends GFFeedAddOn {
         return $description;
 
     }
+
+    public function stripe_refund_form_setting($fields, $form) {
+        // Form setting to enable immediate Stripe refunds
+
+        // Only show this setting if the form has a Stripe feed
+        $feeds = GFAPI::get_feeds(null, $form['id']);
+        $has_stripe_feed = false;
+
+        foreach($feeds as $feed) {
+            if($feed['addon_slug'] === 'gravityformsstripe') {
+                $has_stripe_feed = true;
+                break;
+            }
+        }
+
+        if ($has_stripe_feed === false) {
+            return $fields;
+        }
+
+        $fields['stripe_immediate_refund'] = array(
+            'title'      => 'Stripe Immediate Refund',
+            'tooltip'    => 'By default, Stripe captures the payment when the form is submitted. If you wish to issue an immediate refund during the form submission process, emails this option. This option is used for Card Update workflows, such as updating regular pledge payment details.',
+            'fields'     => array(),
+        );
+
+        $fields['stripe_immediate_refund']['fields'][] = array(
+            'name'       => 'stripe_immediate_refund_mode',
+            'label'      => 'Stripe Immediate Refund Mode',
+            'type'       => 'checkbox',
+            'choices' => array(
+                array(
+                    'label'         => 'Enable Immediate Refund',
+                    'name'          => 'stripe_immediate_refund',
+                    'default_value' => 0,
+                ),
+            ),
+        );
+
+        return $fields;
+    }
+
+    public function stripe_refund_after_submission($entry, $form) {
+        // Processes the refund from Stripe
+
+        if(!isset($form['stripe_immediate_refund']) || $form['stripe_immediate_refund'] != 1) {
+            return $entry;
+        }
+
+        if(!isset($entry['transaction_id']) || substr($entry['transaction_id'], 0, 3) !== "pi_") {
+            return $entry;
+        }
+
+        if(gform_get_meta($entry['id'], 'stripe_immediate_refund_id') != false) {
+            // If refund has already been processed, don't try and refund again
+            return $entry;
+        }
+
+        try {
+            if(!class_exists('\Stripe\Stripe')) {
+                require_once(plugin_dir_path(__DIR__) . 'gravityformsstripe/includes/autoload.php');
+            }
+
+            // Set Stripe API key.
+            $stripe_options = get_option('gravityformsaddon_gravityformsstripe_settings');
+            \Stripe\Stripe::setApiKey($stripe_options[$stripe_options['api_mode'] . '_secret_key']);
+
+        } catch(Exception $e) {
+            error_log("STRIPE/PROFILER IMMEDIATE REFUND SETUP ERROR: " . print_r($e, true));
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Failed. Error Technical Information (Setup): ' . $e->getMessage(), $this->_slug, 'error');
+            return $entry;
+        }
+
+        try {
+            $refund = \Stripe\Refund::create([
+                'payment_intent' => $entry['transaction_id'],
+                'metadata' => array(
+                    'refund_source' => 'profiler_gravityforms_stripe_immediate_refund',
+                ),
+            ]);
+
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Successful. Refund ID: ' . $refund->id, $this->_slug, 'success');
+            gform_add_meta($entry['id'], 'stripe_immediate_refund_id', $refund->id, $form['id']);
+
+        } catch(Exception $e) {
+            error_log("STRIPE/PROFILER IMMEDIATE REFUND ERROR: " . print_r($e, true));
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Failed. Error Technical Information: ' . $e->getMessage(), $this->_slug, 'error');
+        }
+
+        return $entry;
+    }
+
 
     public function meta_box_entry($meta_boxes, $entry, $form) {
         // Custom Metabox
