@@ -130,7 +130,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_pledgefreq",
             "required" => false,
             "choices" => $field_settings,
-            "tooltip" => "The value of this field must be set to 'weekly', 'monthly' or 'yearly'. This field will be used if 'Donation Type' is set to 'regular'."
+            "tooltip" => "The value of this field must be set to 'weekly', 'fortnightly', 'monthly', '3m', '6m', or 'yearly'. This field will be used if 'Donation Type' is set to 'regular'."
         );
         
         $fields[] = array(
