@@ -644,8 +644,12 @@ class GFProfilerDonate extends GFProfilerCommon {
         $postData['regularType'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_pledgetypeid']);
 
         if(empty($postData['regularType'])) {
-            // Default value if above field is empty
-            $postData['regularType'] = $feed['meta']['profilerdonation_pledgetypeid_default'];
+            if(isset($feed['meta']['profilerdonation_pledgetypeid_default'])) {
+                // Default value if above field is empty
+                $postData['regularType'] = $feed['meta']['profilerdonation_pledgetypeid_default'];
+            } else {
+                unset($postData['regularType']);
+            }
         }
 
         if($feed['meta']['profilerdonation_clientacquisitioncode'] !== "") {

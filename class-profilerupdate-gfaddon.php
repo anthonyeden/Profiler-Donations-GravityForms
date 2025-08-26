@@ -9,13 +9,16 @@ class GFProfilerUpdate extends GFProfilerDonate {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerAPI/Legacy/";
-    protected $apifield_apikey = "apikey";
-    protected $apifield_apipass = "apipass";
-    protected $apifield_ipaddress = 'udf';
-    protected $apifield_formurl = true;
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/RapidEndpoint/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
     protected $gffield_legacyname = "update";
     protected $supports_custom_fields = true;
+    protected $supports_mailinglists = true;
 
     public static function get_instance() {
         if (self::$_instance == null) {
@@ -148,7 +151,8 @@ class GFProfilerUpdate extends GFProfilerDonate {
             "name" => "profilerdonation_clientphoneah",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phoneah",
+            "pf_apifield" => "phoneAH",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -157,7 +161,8 @@ class GFProfilerUpdate extends GFProfilerDonate {
             "name" => "profilerdonation_clientphonebus",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonebus",
+            "pf_apifield" => "phoneBus",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -166,7 +171,8 @@ class GFProfilerUpdate extends GFProfilerDonate {
             "name" => "profilerdonation_clientphonemobile",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonemobile",
+            "pf_apifield" => "phoneMobile",
+            "auto_format" => "phone",
         );
         
         $fields[] = array(
@@ -188,32 +194,39 @@ class GFProfilerUpdate extends GFProfilerDonate {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Receipt Name',
-            "type" => "select",
-            "name" => "profilerdonation_userdefined_receiptname",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the donation receipt name to be sent to",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Receipt Name Field',
             "type" => "select",
             "name" => "profilerdonation_receiptname",
             "required" => false,
             "choices" => $field_settings,
+            "pf_apifield" => "receiptName",
         );
 
         $fields[] = array(
-            "label" => 'UDF: Client IP Address',
+            "label" => 'Amount Field',
             "type" => "select",
-            "name" => "profilerdonation_userdefined_clientip",
+            "name" => "profilerdonation_amount",
             "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the client's IP address to be sent to",
-            "choices" => $userdefinedfields,
+            "choices" => $product_field_settings
         );
 
+        $fields[] = array(
+            "label" => 'Payment Gateway ID Used (Field)',
+            "type" => "select",
+            "name" => "profilerdonation_paymentgatewayidused",
+            "required" => false,
+            "tooltip" => "Pick the Profiler Gateway ID used for this transaction (if you are conditionally using multiple gateways in Gravity Forms)",
+            "choices" => $field_settings
+        );
 
+        $fields[] = array(
+            "label" => 'Payment Gateway ID Used (Default)',
+            "type" => "text",
+            "name" => "profilerdonation_paymentgatewayidused_default",
+            "required" => false,
+            "tooltip" => "Specify a default Payment Gateway ID to send through to Profiler",
+            "choices" => $field_settings
+        );
 
         return $fields;
 
@@ -223,7 +236,14 @@ class GFProfilerUpdate extends GFProfilerDonate {
         // Processes the feed and prepares to send it to Profiler
 
         $postData = parent::process_feed_custom($feed, $entry, $form, $postData, $fromValidatorProcessPFGateway, true);
-        $postData['datatype'] = "UPD";
+
+        if(is_array($postData)) {
+            $postData['dataType'] = "UPD";
+
+            if(isset($postData['gatewayCardToken']) || isset($postData['paymentGatewayCustomerId'])) {
+                $postData['updateRegularPaymentsWithToken'] = true;
+            }
+        }
 
         return $postData;
 
