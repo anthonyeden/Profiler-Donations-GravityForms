@@ -296,8 +296,21 @@ class GFProfilerCommon extends GFFeedAddOn {
         $fields = $this->feed_settings_fields()[0]['fields'];
 
         foreach($fields as $field) {
-            if(isset($field['pf_apifield']) && $this->get_field_value($form, $entry, $feed['meta'][$field['name']]) != '') {
-                $postData[$field['pf_apifield']] = trim($this->get_field_value($form, $entry, $feed['meta'][$field['name']]));
+            $field_value = $this->get_field_value($form, $entry, $feed['meta'][$field['name']]);
+            if(isset($field['pf_apifield']) && !empty($field['pf_apifield']) && !empty($field_value)) {
+
+                $postData[$field['pf_apifield']] = trim($field_value);
+
+                $field_object = GFFormsModel::get_field($form, $feed['meta'][$field['name']]);
+
+				if(is_object($field_object)) {
+                    if($field_object->type == 'product' && ($field_object->get_input_type() == 'radio' || $field_object->get_input_type() == 'select')) {
+                        // By default these fields return 'Value ($ 1.00)', but we only want 'Value'
+                        if(strpos($field_value, "(") !== false) {
+                            $postData[$field['pf_apifield']] = trim(substr($field_value, 0, strrpos($field_value, "(") - 1));
+                        }
+                    }
+                }
 
                 // Auto formatting for phone fields
                 if(isset($field['auto_format']) && $field['auto_format'] == "phone") {
