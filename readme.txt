@@ -22,6 +22,16 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.6.0 =
+
+Please backup your site before upgrading, and test all your integrations thoroughly after upgrading this plugin. If you experience trouble, please roll back to a previous version of your site.
+
+* New Feature: Add option to immediately issue a refund after payment with Stripe (useful for Pledge Updates)
+* Donate: Regular Frequency - Update list of supported frequencies in the help text
+* Update Client Details: Upgrade to new version of API
+* Field Mappings: Translate Product Select/Radio values from 'Value ($ 1.00)' to 'Value' before sending to Profiler
+* Mailing Lists (Advanced): Prevent error email when Profiler responds with plain text
+
 = 2.5.4 =
 
 IMPORTANT: After upgrading, you will need to re-configure your 'Mailing Lists (Advanced)' feeds to re-add your mailing list codes. This is due to the removal of the UDF configuration.
