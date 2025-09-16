@@ -199,6 +199,10 @@ class GFProfilerLists extends GFProfilerCommon {
                 gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['integrationId'], $form['id']);
                 gform_add_meta($entry["id"], "profiler_integration_guid", $pfResponse['dataArray']['integrationGuid'], $form['id']);
             }
+        } else if($pfResponse['data'] == 'Subscribe request complete') {
+            // For some reason this endpoint returns plain text
+            // Do nothing - just don't send a failure email (below)
+
         } else {
             // Profiler failed. Send the failure email.
             $this->sendFailureEmail($entry, $form, $pfResponse, $feed['meta']["profiler_erroremailaddress"]);
