@@ -9,11 +9,13 @@ class GFProfilerInteraction extends GFProfilerCommon {
     protected $gateways;
     protected static $_instance = null;
 
-    protected $apifield_endpoint = "/ProfilerAPI/interaction/";
-    protected $apifield_apikey = "apikey";
-    protected $apifield_apipass = "apipass";
-    protected $apifield_ipaddress = 'udf';
-    protected $apifield_formurl = true;
+    protected $api_type = "json";
+    protected $api_domain = "profilersoftware.com";
+    protected $apifield_endpoint = "/ProfilerAPI/RapidEndpoint/";
+    protected $apifield_apikey = "apiuser";
+    protected $apifield_apipass = "apipassword";
+    protected $apifield_ipaddress = 'requestIPAddress';
+    protected $apifield_formurl = 'pageURL';
     protected $gffield_legacyname = "interaction";
     protected $supports_custom_fields = true;
     protected $supports_mailinglists = true;
@@ -161,7 +163,8 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_clientphoneah",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phoneah",
+            "pf_apifield" => "phoneAH",
+            "auto_format" => "phone",
         );
 
         $fields[] = array(
@@ -170,7 +173,8 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_clientphonebus",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonebus",
+            "pf_apifield" => "phoneBus",
+            "auto_format" => "phone",
         );
 
         $fields[] = array(
@@ -179,7 +183,8 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "name" => "profilerinteraction_clientphonemobile",
             "required" => false,
             "choices" => $field_settings,
-            "pf_apifield" => "phonemobile",
+            "pf_apifield" => "phoneMobile",
+            "auto_format" => "phone",
         );
 
         $fields[] = array(
@@ -201,30 +206,13 @@ class GFProfilerInteraction extends GFProfilerCommon {
         );
 
         $fields[] = array(
-            "label" => 'UDF: Interaction Type ID',
-            "type" => "select",
-            "name" => "profilerinteraction_userdefined_interactiontype",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the Interaction Type ID/Code to be sent to",
-            "choices" => $userdefinedfields,
-        );
-
-        $fields[] = array(
             "label" => 'Interaction Type ID',
             "type" => "select",
             "name" => "profilerinteraction_interactiontype",
             "tooltip" => 'Select a Interaction Type ID/Code from Profiler',
             "required" => false,
             "choices" => array_merge($hiddenFields, $checkboxRadioFields, $selectfields),
-        );
-        
-        $fields[] = array(
-            "label" => 'UDF: Confidential?',
-            "type" => "select",
-            "name" => "profilerinteraction_userdefined_confidential",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the Confidential Status to be sent to",
-            "choices" => $userdefinedfields,
+            "pf_apifield" => "interactionType",
         );
 
         $fields[] = array(
@@ -234,15 +222,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "tooltip" => 'Should this interaction be marked as Confidential in Profiler? Values must be Y or N.',
             "required" => false,
             "choices" => array_merge($yesno_options, $hiddenFields, $checkboxRadioFields, $selectfields),
-        );
-        
-        $fields[] = array(
-            "label" => 'UDF: Alert?',
-            "type" => "select",
-            "name" => "profilerinteraction_userdefined_alert",
-            "required" => false,
-            "tooltip" => "Pick the Profiler User Defined Field you wish the Alert Status to be sent to",
-            "choices" => $userdefinedfields,
+            "pf_apifield" => "interactionConfidential",
         );
 
         $fields[] = array(
@@ -252,6 +232,7 @@ class GFProfilerInteraction extends GFProfilerCommon {
             "tooltip" => 'Should this interaction be marked as an Alert in Profiler? Values must be Y or N.',
             "required" => false,
             "choices" => array_merge($yesno_options, $hiddenFields, $checkboxRadioFields, $selectfields),
+            "pf_apifield" => "interactionAlert",
         );
 
         return $fields;
@@ -272,9 +253,6 @@ class GFProfilerInteraction extends GFProfilerCommon {
         // This is a work-around to the API endpoint not allowing some characters
         $postData['comments'] = preg_replace('/[^\x20-\x7E]/','', $postData['comments']);
 
-        // Interaction Type ID
-        $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_interactiontype']] = $this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_interactiontype']);
-
         // Confidential? Y/N
         if(strtolower($feed['meta']['profilerinteraction_confidential']) == "true") {
             $confidential = "Y";
@@ -284,14 +262,14 @@ class GFProfilerInteraction extends GFProfilerCommon {
             $confidential = strtolower($this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_confidential']));
         }
 
-        if($confidential === true || $confidential == "y" || $confidential == "true" || $confidential == "yes") {
+        if($confidential === true || $confidential == "y" || $confidential == "Y" || $confidential == "true" || $confidential == "yes") {
             $confidential = "Y";
         } else {
             $confidential = "N";
         }
 
-        $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_confidential']] = $confidential;
-        
+        $postData['interactionConfidential'] = $confidential;
+
         // Alert? Y/N
         if(strtolower($feed['meta']['profilerinteraction_alert']) == "true") {
             $alert = "Y";
@@ -301,13 +279,13 @@ class GFProfilerInteraction extends GFProfilerCommon {
             $alert = strtolower($this->get_field_value($form, $entry, $feed['meta']['profilerinteraction_alert']));
         }
 
-        if($alert === true || $alert == "y" || $alert == "true" || $alert == "yes") {
+        if($alert === true || $alert == "y" || $alert == "Y" || $alert == "true" || $alert == "yes") {
             $alert  = "Y";
         } else {
             $alert = "N";
         }
 
-        $postData['userdefined' . $feed['meta']['profilerinteraction_userdefined_alert']] = $alert;
+        $postData['interactionAlert'] = $alert;
 
         return $postData;
     }
