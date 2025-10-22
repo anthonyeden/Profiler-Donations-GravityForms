@@ -105,7 +105,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
 
         $comments = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_comments']);
 
-        $comments .= GFCommon::replace_variables($feed['meta']['profilerdonation_commentsextra'], $form, $entry, false, true, false, 'text');
+        $comments .= " " . GFCommon::replace_variables($feed['meta']['profilerdonation_commentsextra'], $form, $entry, false, true, false, 'text');
         $comments = html_entity_decode($comments);
 
         // Only allow ASCII printable characters.
@@ -113,7 +113,7 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         $comments = preg_replace('/[^\x20-\x7E]/','', $comments);
 
         // Comments
-        $postData['comments'] = $comments;
+        $postData['comments'] = trim($comments);
 
         $gfEntryId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_gfentryid']);
         $pfIntegrationId = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_profilerid']);
