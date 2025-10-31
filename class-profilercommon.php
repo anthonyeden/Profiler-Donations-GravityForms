@@ -526,9 +526,19 @@ class GFProfilerCommon extends GFFeedAddOn {
                 foreach ($field['inputs'] as $keyvalue => $inputvalue) {
                     $field_settings = array();
                     $field_settings['value'] = $inputvalue['id'];
-                    $field_settings['label'] = $preface . $inputvalue['label'];
+                    $field_settings['label'] = $preface . (!empty($field['label']) ? ' ' . $field['label'] . ': ' : '') . $inputvalue['label'];
                     $formfields[] = $field_settings;
                 }
+            } elseif ($field['type'] == 'hidden') {
+                $formfields[] = array(
+                    "value" => $field['id'],
+                    "label" => (!empty($field['label']) ? $field['label'] : 'Hidden Field #' . $field['id'])
+                );
+            } elseif ($field['type'] == 'select') {
+                $formfields[] = array(
+                    "value" => $field['id'],
+                    "label" => (!empty($field['label']) ? $field['label'] : 'Select Field #' . $field['id'])
+                );
             } elseif($field["type"] != "creditcard") {
                 // Process all fields except credit cards - we don't want them in the list
                 $field_settings = array();
@@ -565,7 +575,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             if ($field['type'] == 'hidden') {
                 $formfields[] = array(
                     "value" => $field['id'],
-                    "label" => $field['label']
+                    "label" => (!empty($field['label']) ? $field['label'] : 'Hidden Field #' . $field['id'])
                 );
             }
         }
@@ -681,7 +691,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             if ($field['type'] == 'select') {
                 $formfields[] = array(
                     "value" => $field['id'],
-                    "label" => $field['label']
+                    "label" => (!empty($field['label']) ? $field['label'] : 'Select Field #' . $field['id'])
                 );
             }
         }
@@ -716,7 +726,7 @@ class GFProfilerCommon extends GFFeedAddOn {
                 
                 $formfields[] = array(
                     "value" => $field['id'],
-                    "label" => $field['label']
+                    "label" => (!empty($field['label']) ? $field['label'] : 'Product Field #' . $field['id'])
                 );
             }
         }
