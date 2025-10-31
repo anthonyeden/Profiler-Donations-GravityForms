@@ -472,7 +472,7 @@ class GFProfilerDonate extends GFProfilerCommon {
 
         $fields[] = array(
             "label" => 'Client Tags',
-            "type" => "textarea",
+            "type" => "text",
             "name" => "profilerdonation_clienttags",
             "required" => false,
             "class" => "merge-tag-support",

@@ -197,6 +197,25 @@ class GFProfilerInteraction extends GFProfilerCommon {
         );
 
         $fields[] = array(
+            "label" => 'Client Acquisition Field',
+            "type" => "select",
+            "name" => "profilerinteraction_clientacquisitioncode",
+            "required" => false,
+            "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
+            "choices" => $field_settings,
+            "pf_apifield" => "clientAcquiredReason",
+        );
+
+        $fields[] = array(
+            "label" => 'Client Tags',
+            "type" => "text",
+            "name" => "profilerinteraction_clienttags",
+            "required" => false,
+            "class" => "merge-tag-support",
+            "tooltip" => "This field's value should match the Client Tags setup within Profiler. This list can be comma-separated for multiple tags. Use merge fields here to dynamically set tags.",
+        );
+
+        $fields[] = array(
             "label" => 'Interaction Text',
             "type" => "textarea",
             "name" => "profilerinteraction_interactiontext",
@@ -286,6 +305,12 @@ class GFProfilerInteraction extends GFProfilerCommon {
         }
 
         $postData['interactionAlert'] = $alert;
+
+        // Client Tags
+        if(!empty($feed['meta']['profilerinteraction_clienttags'])) {
+            // Comma separated tags. Can be merge fields.
+            $postData['clientTag'] = trim(GFCommon::replace_variables($feed['meta']['profilerinteraction_clienttags'], $form, $entry, false, true, false, 'text'));
+        }
 
         return $postData;
     }
