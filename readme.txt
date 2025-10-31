@@ -2,7 +2,7 @@
 Contributors: anthonyeden
 Tags: gravity-forms, fundraising, crm, donation, profiler
 Requires at least: 6.0
-Tested up to: 6.7.1
+Tested up to: 6.8.3
 Stable tag: trunk
 Requires PHP: 7.4.0
 License: GPLv2 or later
@@ -21,6 +21,15 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 2. Configure the plugin, and Profiler, based on these instructions: https://support.profiler.net.au/kb/linking-a-payment-donation-gravity-form-to-profiler-using-the-plugin/
 
 == Changelog ==
+
+= 2.7.1 =
+
+* Extra Comments Fields: Add space between this and normal comments field
+* Donate & Interactions: Client Tags field
+* Mailing List Advanced: Add 'Client Acquisition' field
+* Interaction: Add Client Acquisition field
+* Field Select Drop-down Labels: Add parent field name to complex fields, and substitute some blank field names with the field ID
+* Card Processing (Legacy): Only include JS if a legacy card field is used on the form (note: Gravity Forms have deprecated this field and it may be removed in a future version - https://docs.gravityforms.com/deprecation-of-the-gravity-forms-credit-card-field/. If you use the Stripe field or other modern gateway, there will be no impact.)
 
 = 2.7.0 = 
 
