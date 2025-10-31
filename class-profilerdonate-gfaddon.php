@@ -335,7 +335,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_commentsextra",
             "required" => false,
             "class" => "merge-tag-support",
-            "tooltip" => "This is extra text to be sent to Profiler in the Comments field. Youc an include Gravity Forms Merge Fields in this textarea to accept additional user input.",
+            "tooltip" => "This is extra text to be sent to Profiler in the Comments field. You can include Gravity Forms Merge Fields in this textarea to accept additional user input.",
         );
 
         $fields[] = array(
@@ -469,6 +469,15 @@ class GFProfilerDonate extends GFProfilerCommon {
             "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
             "choices" => $field_settings
         );
+
+        $fields[] = array(
+            "label" => 'Client Tags',
+            "type" => "textarea",
+            "name" => "profilerdonation_clienttags",
+            "required" => false,
+            "class" => "merge-tag-support",
+            "tooltip" => "This field's value should match the Client Tags setup within Profiler. This list can be comma-separated for multiple tags. Use merge fields here to dynamically set tags.",
+        );
         
         $fields[] = array(
             "label" => 'Donation Purpose Field',
@@ -476,7 +485,7 @@ class GFProfilerDonate extends GFProfilerCommon {
             "name" => "profilerdonation_donationpurposecode",
             "required" => false,
             "tooltip" => "This field's value should match the Purpose Codes setup within Profiler.",
-            "choices" => $field_settings
+            "choices" => $field_settings,
         );
 
         $fields[] = array(
@@ -659,7 +668,13 @@ class GFProfilerDonate extends GFProfilerCommon {
         } else {
             $postData['clientAcquiredReason'] = $this->getDonationCode($feed, 'clientacquisitioncode', $form);
         }
-        
+
+        // Client Tags
+        if(!empty($feed['meta']['profilerdonation_clienttags'])) {
+            // Comma separated tags. Can be merge fields.
+            $postData['clientTag'] = trim(GFCommon::replace_variables($feed['meta']['profilerdonation_clienttags'], $form, $entry, false, true, false, 'text'));
+        }
+
         if($feed['meta']['profilerdonation_donationpurposecode'] !== "") {
             $postData['paymentPupose'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
         }
