@@ -1,4 +1,7 @@
 <?php
+// This is a legacy file to support credit card field processing in Gravity Forms for Profiler Donations.
+// It works around some historic issues with how Gravity Forms's JS sends the credit card number field.
+// Now days, this shouldn't be used - we recommend using Stripe or another modern gateway that handles card processing client-side.
 
 function profilerdonation_creditcardfilter($field_content, $field) {
     if ($field->type == 'creditcard') {
@@ -9,7 +12,20 @@ function profilerdonation_creditcardfilter($field_content, $field) {
 }
 
 function profilerdonation_cardprocessscript($form) {
-    wp_enqueue_script('profilerdonation_cardprocessscript', plugin_dir_url(__FILE__).'/cardprocess.js');
+    // If Gravity Forms has a 'creditcard' field, we need to enqueue our card processing script
+    $has_creditcard = false;
+    foreach($form['fields'] as $field) {
+        if($field->type == 'creditcard') {
+            $has_creditcard = true;
+            break;
+        }
+    }
+
+    if(!$has_creditcard) {
+        return;
+    }
+
+    wp_enqueue_script('profilerdonation_cardprocessscript', trailingslashit(plugin_dir_url(__FILE__)).'cardprocess.js');
 }
 
 add_filter('gform_field_content', 'profilerdonation_creditcardfilter', 10, 2);
