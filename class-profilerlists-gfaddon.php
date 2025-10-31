@@ -188,6 +188,16 @@ class GFProfilerLists extends GFProfilerCommon {
             "pf_apifield" => "website",
         );
 
+        $fields[] = array(
+            "label" => 'Client Acquisition Field',
+            "type" => "select",
+            "name" => "profilerdonation_clientacquisitioncode",
+            "required" => false,
+            "tooltip" => "This field's value should match the Client Acquisition Codes setup within Profiler.",
+            "choices" => $field_settings,
+            "pf_apifield" => "clientAcquiredReason",
+        );
+
         return $fields;
         
     }

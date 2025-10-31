@@ -1,5 +1,5 @@
 <?php
-    
+
 class GFProfilerListsBasic extends GFProfilerCommon {
     protected $_slug = "profiler-listsbasic-gf";
     protected $_title = "Profiler / Gravity Forms - Mailing Lists (Basic Email) Integration Feed";
