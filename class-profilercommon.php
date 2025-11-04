@@ -1066,10 +1066,12 @@ class GFProfilerCommon extends GFFeedAddOn {
     public function stripe_customer_id($customer_id, $feed, $entry, $form) {
         // Create a new customer in Stripe
 
+        static $cached_customer_ids = array();
+
         // Find email address field
         foreach($form['fields'] as &$field) {
             if($field->type == "email") {
-                $email = $this->get_field_value($form, $entry, $field->id);
+                $email_address = $this->get_field_value($form, $entry, $field->id);
             }
         }
 
@@ -1081,40 +1083,47 @@ class GFProfilerCommon extends GFFeedAddOn {
             }
         }
 
-        if(!isset($email)) {
+        if(!isset($email_address) || empty($email_address)) {
             return $customer_id;
+        }
+
+        if(isset($cached_customer_ids[$email_address]) && !empty($cached_customer_ids[$email_address])) {
+            return $cached_customer_ids[$email_address];
         }
 
         if(class_exists('\Stripe\Customer')) {
             // Find an existing customer by email
             $stripe_all_customers = \Stripe\Customer::all(array(
-                'email' => $email,
+                'email' => $email_address,
                 'limit' => 1
             ));
 
-            if(isset($stripe_all_customers['data'][0]['id'])) {
+            if(isset($stripe_all_customers['data'][0]['id']) && !empty($name) && $name != $stripe_all_customers['data'][0]['name']) {
                 // Update the name of the customer
-                if(!empty($name)) {
-                    $update = \Stripe\Customer::update(
-                        $stripe_all_customers['data'][0]['id'],
-                        array(
-                            'name' => $name
-                        )
-                    );
-                }
+                $update = \Stripe\Customer::update(
+                    $stripe_all_customers['data'][0]['id'],
+                    array(
+                        'name' => $name
+                    )
+                );
 
                 // Return existing customer ID
-                return $stripe_all_customers['data'][0]['id'];
+                if(isset($stripe_all_customers['data'][0]['id'])) {
+                    $cached_customer_ids[$email_address] = $stripe_all_customers['data'][0]['id'];
+                    return $stripe_all_customers['data'][0]['id'];
+                }
             }
         }
 
         // Create a new customer
         $customer_meta = array();
-        $customer_meta['description'] = $email . ' ' . $name;
+        $customer_meta['description'] = $email_address . ' ' . $name;
         $customer_meta['name'] = $name;
-        $customer_meta['email'] = $email;
+        $customer_meta['email'] = $email_address;
 
         $customer = gf_stripe()->create_customer($customer_meta, $feed, $entry, $form);
+        $cached_customer_ids[$email_address] = $customer->id;
+
         return $customer->id;
     }
 
