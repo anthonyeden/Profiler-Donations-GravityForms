@@ -22,6 +22,10 @@ A Wordpress plugin to integrate your Gravity Forms with Profiler CRM. You can se
 
 == Changelog ==
 
+= 2.7.2 =
+
+* Stripe: Improves performance with transactions caused when finding and updating Customer IDs
+
 = 2.7.1 =
 
 * Extra Comments Fields: Add space between this and normal comments field
