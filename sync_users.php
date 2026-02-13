@@ -57,7 +57,10 @@ class ProfilerUsers {
 
     public function settings_init() { 
 
-        register_setting($this->settings_prefix, $this->settings_prefix . 'settings');
+        register_setting($this->settings_prefix, $this->settings_prefix . 'settings', array(
+            'type' => 'array',
+            'sanitize_callback' => array($this, 'sanitize_settings'),
+        ));
 
         add_settings_section(
             $this->settings_prefix . 'section',
@@ -301,6 +304,22 @@ class ProfilerUsers {
         );
      
         return $schedules;
+    }
+
+    public function sanitize_settings($input) {
+        if (!is_array($input)) {
+            return array();
+        }
+        
+        $sanitized = array();
+        foreach ($input as $key => $value) {
+            if (is_array($value)) {
+                $sanitized[$key] = $this->sanitize_settings($value);
+            } else {
+                $sanitized[$key] = sanitize_text_field($value);
+            }
+        }
+        return $sanitized;
     }
 
 }
