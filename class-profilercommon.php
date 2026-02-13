@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 class GFProfilerCommon extends GFFeedAddOn {
     protected $_path = "profiler-donation-gf/index.php";
     protected $_full_path = __FILE__;

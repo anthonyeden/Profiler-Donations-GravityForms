@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 class GFProfilerEvents extends GFProfilerCommon {
     protected $_slug = "profiler-events-gf";
     protected $_title = "Profiler / Gravity Forms - Events Integration Feed";

@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 GFForms::include_addon_framework();
 
 class GF_Profiler_FeedList extends GFAddOn {

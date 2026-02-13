@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 class GFProfilerUpdate extends GFProfilerDonate {
     protected $_slug = "profiler-update-gf";
     protected $_title = "Profiler / Gravity Forms - Update Details Integration Feed";

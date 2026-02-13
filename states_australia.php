@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 function profilerdonate_states_australia($addressTypes, $form_id) {
     $addressTypes['australia'] = array(
         'label'       =>   'Australia',

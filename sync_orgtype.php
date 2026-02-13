@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 // This feature allows orgtype to automatically be created in Wordpress for active subscribers
 
 class ProfilerOrgType {

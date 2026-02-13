@@ -25,6 +25,8 @@ along with 'Profiler Donations - Gravity Forms Add-On'. If not, see https://www.
 
 */
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 add_action('gform_loaded', array('ProfilerDonation_GF_Launch', 'ProfilerDonation_load'), 5);
 
 class ProfilerDonation_GF_Launch {

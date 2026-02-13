@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 class GFProfilerLists extends GFProfilerCommon {
     protected $_slug = "profiler-lists-gf";
     protected $_title = "Profiler / Gravity Forms - Mailing Lists (Advanced) Integration Feed";

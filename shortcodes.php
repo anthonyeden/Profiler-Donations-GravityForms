@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 add_shortcode('donate_setoptions', 'profilerdonate_setoptions');
 add_action('wp_footer', 'profilerdonate_clearoptions');
 

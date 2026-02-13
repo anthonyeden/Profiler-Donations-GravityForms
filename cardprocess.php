@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 // This is a legacy file to support credit card field processing in Gravity Forms for Profiler Donations.
 // It works around some historic issues with how Gravity Forms's JS sends the credit card number field.
 // Now days, this shouldn't be used - we recommend using Stripe or another modern gateway that handles card processing client-side.
