@@ -46,8 +46,8 @@ class ProfilerUsers {
         }
 
         // Display message on Admin Console
-        if(is_admin() && isset($_GET['page']) && $_GET['page'] == 'profiler_users') {
-            echo $log . "<br />";
+        if(is_admin() && isset($_GET['page']) && sanitize_text_field($_GET['page']) == 'profiler_users') {
+            echo esc_html($log) . "<br />";
         }
      }
 
@@ -91,7 +91,8 @@ class ProfilerUsers {
 
     public function setting_render($args = array()) {
         if(!isset($this->settings[$args['field_key']])) {
-            echo "Field not found:" . $args['field_key'];
+            echo esc_html("Field not found:" . $args['field_key']);
+            return;
         }
 
         $field = $this->settings[$args['field_key']];
@@ -105,20 +106,20 @@ class ProfilerUsers {
 
         if($field['type'] == "text") {
             // Text fields
-            echo '<input type="text" name="profiler_users_settings['.$args['field_key'].']" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
+            echo '<input type="text" name="profiler_users_settings[' . esc_attr($args['field_key']) . ']" value="' . esc_attr($value) . '" />';
         } elseif($field['type'] == "password") {
             // Password fields
-            echo '<input type="password" name="profiler_users_settings['.$args['field_key'].']" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
+            echo '<input type="password" name="profiler_users_settings[' . esc_attr($args['field_key']) . ']" value="' . esc_attr($value) . '" />';
         } elseif($field['type'] == "select") {
             // Select / drop-down fields
-            echo '<select name="profiler_users_settings['.$args['field_key'].']">';
+            echo '<select name="profiler_users_settings[' . esc_attr($args['field_key']) . ']">';
             foreach($field['options'] as $selectValue => $name) {
-                echo '<option value="'.$selectValue.'" '.($value == $selectValue ? "selected" : "").'>'.$name.'</option>';
+                echo '<option value="' . esc_attr($selectValue) . '" ' . selected($value, $selectValue, false) . '>' . esc_html($name) . '</option>';
             }
             echo '</select>';
         } elseif($field['type'] == "checkbox") {
             // Checkbox fields
-            echo '<input type="checkbox" name="profiler_users_settings['.$args['field_key'].']" value="true" '.("true" == $value ? "checked" : "").' />';
+            echo '<input type="checkbox" name="profiler_users_settings[' . esc_attr($args['field_key']) . ']" value="true" ' . checked('true', $value, false) . ' />';
         }
     }
 
@@ -138,12 +139,12 @@ class ProfilerUsers {
         krsort($runs);
 
         echo '<h2>User Sync History</h2>';
-        echo '<p>Last Attempted Run: '.($last_attempt > 0 ? date("Y-m-d H:i:s", $last_attempt) : "NEVER").'</p>';
+        echo '<p>Last Attempted Run: ' . esc_html($last_attempt > 0 ? date("Y-m-d H:i:s", $last_attempt) : "NEVER") . '</p>';
         echo '<p>Successful Runs:</p>';
         echo '<ul>';
         $runCount = 0;
         foreach($runs as $time => $count) {
-            echo '<li>'.date("Y-m-d H:i:s", $time).': '.$count.' '.($count == 1 ? "user" : "userss").' imported from master site</li>';
+            echo '<li>' . esc_html(date("Y-m-d H:i:s", $time)) . ': ' . esc_html($count) . ' ' . esc_html($count == 1 ? "user" : "userss") . ' imported from master site</li>';
             $runCount++;
 
             if($runCount > 10)
@@ -162,7 +163,8 @@ class ProfilerUsers {
             $this->job();
             echo '<p><strong>Import complete!</strong></p>';
         } else {
-            echo '<p class="submit"><a href="?page='.$_GET['page'].'&importnow=true" class="button button-primary">Import Users Now</a></p>';
+            $page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+            echo '<p class="submit"><a href="'.esc_attr('?page=' . $page . '&importnow=true').'" class="button button-primary">Import Users Now</a></p>';
         }
     }
 

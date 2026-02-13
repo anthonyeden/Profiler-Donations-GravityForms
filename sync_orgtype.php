@@ -142,7 +142,7 @@ class ProfilerOrgType {
 
         // Display message on Admin Console
         if(is_admin() && isset($_GET['page']) && $_GET['page'] == 'profiler_orgtype') {
-            echo $log . "<br />";
+            echo esc_html($log) . "<br />";
         }
      }
 
@@ -159,7 +159,7 @@ class ProfilerOrgType {
 
         add_settings_section(
             $this->settings_prefix . 'section',
-            __('Profiler OrgTypes Settings', $this->settings_prefix),
+            __('Profiler OrgTypes Settings', 'profiler-donations-gravityforms'),
             false,
             $this->settings_prefix
         );
@@ -167,7 +167,7 @@ class ProfilerOrgType {
         foreach($this->settings as $settingId => $setting) {
             add_settings_field( 
                 $this->settings_prefix . $settingId, 
-                __($setting['title'], $this->settings_prefix),
+                $setting['title'],
                 array($this, 'setting_render'),
                 $this->settings_prefix,
                 $this->settings_prefix . 'section',
@@ -186,7 +186,8 @@ class ProfilerOrgType {
 
     public function setting_render($args = array()) {
         if(!isset($this->settings[$args['field_key']])) {
-            echo "Field not found:" . $args['field_key'];
+            echo esc_html("Field not found:" . $args['field_key']);
+            return;
         }
 
         $field = $this->settings[$args['field_key']];
@@ -200,23 +201,23 @@ class ProfilerOrgType {
 
         if($field['type'] == "text") {
             // Text fields
-            echo '<input type="text" name="profiler_orgtype_settings['.$args['field_key'].']" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
+            echo '<input type="text" name="' . esc_attr('profiler_orgtype_settings['.$args['field_key'].']') . '" value="' . esc_attr($value) . '" />';
         } elseif($field['type'] == "text") {
             // Text fields
-            echo '<input type="text" name="profiler_orgtype_settings['.$args['field_key'].']" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
+            echo '<input type="text" name="' . esc_attr('profiler_orgtype_settings['.$args['field_key'].']') . '" value="' . esc_attr($value) . '" />';
         } elseif($field['type'] == "textarea") {
             // Textarea fields
-            echo '<textarea name="profiler_orgtype_settings['.$args['field_key'].']">'.htmlspecialchars($value, ENT_QUOTES)."</textarea>";
+            echo '<textarea name="' . esc_attr('profiler_orgtype_settings['.$args['field_key'].']') . '">' . esc_textarea($value) . "</textarea>";
         } elseif($field['type'] == "select") {
             // Select / drop-down fields
-            echo '<select name="profiler_orgtype_settings['.$args['field_key'].']">';
+            echo '<select name="' . esc_attr('profiler_orgtype_settings['.$args['field_key'].']') . '">';
             foreach($field['options'] as $selectValue => $name) {
-                echo '<option value="'.$selectValue.'" '.($value == $selectValue ? "selected" : "").'>'.$name.'</option>';
+                echo '<option value="' . esc_attr($selectValue) . '" ' . selected($value, $selectValue, false) . '>' . esc_html($name) . '</option>';
             }
             echo '</select>';
         } elseif($field['type'] == "checkbox") {
             // Checkbox fields
-            echo '<input type="checkbox" name="profiler_orgtype_settings['.$args['field_key'].']" value="true" '.("true" == $value ? "checked" : "").' />';
+            echo '<input type="checkbox" name="' . esc_attr('profiler_orgtype_settings['.$args['field_key'].']') . '" value="true" ' . checked('true', $value, false) . ' />';
         }
     }
 
@@ -236,12 +237,12 @@ class ProfilerOrgType {
         krsort($runs);
 
         echo '<h2>Organisation Import History</h2>';
-        echo '<p>Last Attempted Run: '.($last_attempt > 0 ? date("Y-m-d H:i:s", $last_attempt) : "NEVER").'</p>';
+        echo '<p>Last Attempted Run: ' . esc_html($last_attempt > 0 ? date("Y-m-d H:i:s", $last_attempt) : "NEVER") . '</p>';
         echo '<p>Successful Runs:</p>';
         echo '<ul>';
         $runCount = 0;
         foreach($runs as $time => $count) {
-            echo '<li>'.date("Y-m-d H:i:s", $time).': '.$count.' '.($count == 1 ? "organisation" : "organisations").' imported from Profiler database</li>';
+            echo '<li>' . esc_html(date("Y-m-d H:i:s", $time)) . ': ' . esc_html($count) . ' ' . ($count == 1 ? "organisation" : "organisations") . ' imported from Profiler database</li>';
             $runCount++;
 
             if($runCount > 10)
@@ -260,7 +261,8 @@ class ProfilerOrgType {
             $this->job();
             echo '<p><strong>Import complete!</strong></p>';
         } else {
-            echo '<p class="submit"><a href="?page='.$_GET['page'].'&importnow=true" class="button button-primary">Import Organisations Now</a></p>';
+            $page = isset($_GET['page']) ? $_GET['page'] : '';
+            echo '<p class="submit"><a href="?page=' . esc_attr($page . '&importnow=true') . '" class="button button-primary">Import Organisations Now</a></p>';
         }
     }
 
@@ -637,7 +639,7 @@ class ProfilerOrgType {
                 continue;
             }
 
-            $html .= '<div class="profiler-directory-entry directory-'.$a['orgtype'].' directory-entry-'.$this_post->ID.' '.(isset($_GET['orgid']) ? 'directory-individual' : '').'">';
+            $html .= '<div class="'.esc_attr('profiler-directory-entry directory-'.$a['orgtype'].' directory-entry-'.$this_post->ID.' '.(isset($_GET['orgid']) ? 'directory-individual' : '')).'">';
 
             // Work out the unique URL
             if ($page_url_query_string) {
@@ -674,25 +676,25 @@ class ProfilerOrgType {
                     $url_link_logo_attrs = '';
                 }
 
-                $html .= '<a href="'.$url_link_logo.'" '.$url_link_logo_attrs.'>';
+                $html .= '<a href="'.esc_url($url_link_logo).'" '.$url_link_logo_attrs.'>';
                 $html .= $logo;
                 $html .= '</a>';
             }
 
             // Item title
-            $html .= '<h3><a href="'.$individual_url.'">'.$this_post->post_title.'</a></h3>';
+            $html .= '<h3><a href="'.esc_url($individual_url).'">'.esc_html($this_post->post_title).'</a></h3>';
 
             if(isset($meta_fields['address']) || isset($meta_fields['suburb'])) {
                 $html .=  '<p>';
 
                 if(isset($meta_fields['address']))
-                    $html .= $meta_fields['address'];
+                    $html .= esc_html($meta_fields['address']);
                 if(isset($meta_fields['suburb'])) 
-                    $html .= (isset($meta_fields['address']) ? '<br />' : '') . $meta_fields['suburb'];
+                    $html .= (isset($meta_fields['address']) ? '<br />' : '') . esc_html($meta_fields['suburb']);
                 if(isset($meta_fields['state']))
-                    $html .= '<br />' . $meta_fields['state'];
+                    $html .= '<br />' . esc_html($meta_fields['state']);
                 if(isset($meta_fields['postcode']))
-                    $html .= ' ' . $meta_fields['postcode'];
+                    $html .= ' ' . esc_html($meta_fields['postcode']);
 
                 $html .= '</p>';
             }
@@ -702,11 +704,11 @@ class ProfilerOrgType {
                 if(substr($meta_fields['website'], 0, 4) !== 'http') {
                     $meta_fields['website'] = 'http://' . $meta_fields['website'];
                 }
-                $html .= '<p><a href="'.$meta_fields['website'].'" target="_blank" rel="nofollow">'.$meta_fields['website'].'</a></p>';
+                $html .= '<p><a href="'.esc_url($meta_fields['website']).'" target="_blank" rel="nofollow">'.esc_html($meta_fields['website']).'</a></p>';
             }
 
             if(isset($meta_fields['phone'])) {
-                $html .= '<p>'.$meta_fields['phone'].'</p>';
+                $html .= '<p>'.esc_html($meta_fields['phone']).'</p>';
             }
 
             if(isset($_GET['orgid'])) {
