@@ -36,7 +36,7 @@ function profilerdonate_setoptions($atts, $content = null) {
     $_SESSION['profilerdonation_pledgeacquisitioncode'] = $a['pledgeacquisitioncode'];
     
     // Store the request URI, too. This ensures we don't carry custom sourcecodes between pages
-    $_SESSION['profilerdonation_codes_page'] = $_SERVER['REQUEST_URI'];
+    $_SESSION['profilerdonation_codes_page'] = isset($_SERVER['REQUEST_URI']) ? esc_url_raw($_SERVER['REQUEST_URI']) : '';
     
     // Allow the default form to be replaced on this page (small)
     if(!empty($a['formid_small'])) {
