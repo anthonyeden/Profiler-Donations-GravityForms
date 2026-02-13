@@ -64,7 +64,7 @@ class ProfilerUsers {
 
         add_settings_section(
             $this->settings_prefix . 'section',
-            __('Profiler Users Settings', $this->settings_prefix),
+            __('Profiler Users Settings', 'profiler-donations-gravityforms'),
             false,
             $this->settings_prefix
         );
@@ -72,7 +72,7 @@ class ProfilerUsers {
         foreach($this->settings as $settingId => $setting) {
             add_settings_field( 
                 $this->settings_prefix . $settingId, 
-                __($setting['title'], $this->settings_prefix),
+                $setting['title'],
                 array($this, 'setting_render'),
                 $this->settings_prefix,
                 $this->settings_prefix . 'section',
@@ -302,7 +302,7 @@ class ProfilerUsers {
     public function cron_schedules($schedules) {
         $schedules['fifteen_minutes'] = array(
             'interval' => 900,
-            'display'  => esc_html__('Every Fifteen Minutes'),
+            'display'  => esc_html__('Every Fifteen Minutes', 'profiler-donations-gravityforms'),
         );
      
         return $schedules;
