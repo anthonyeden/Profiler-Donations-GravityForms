@@ -255,15 +255,15 @@ class WC_Integration_Profiler extends WC_Integration {
             echo "<p><strong>Successfuly sent to Profiler</strong></p>";
 
             // Status fields
-            echo '<p>Last Progress: '.get_post_meta( $post->ID, 'profiler_progress', true ).'</p>';
-            echo '<p>Log Data: <pre style="width: 100%; overflow: scroll;">'.get_post_meta( $post->ID, 'profiler_log', true ).'</pre></p>';
+            echo '<p>Last Progress: ' . esc_html(get_post_meta( $post->ID, 'profiler_progress', true )) . '</p>';
+            echo '<p>Log Data: <pre style="width: 100%; overflow: scroll;">' . esc_html(get_post_meta( $post->ID, 'profiler_log', true )) . '</pre></p>';
 
         } elseif($status == 'false') {
             echo "<p><strong>Failed to send to Profiler</strong></p>";
 
             // Status fields
-            echo '<p>Last Progress: '.get_post_meta( $post->ID, 'profiler_progress', true ).'</p>';
-            echo '<p>Log Data: <pre style="width: 100%; overflow: scroll;">'.get_post_meta( $post->ID, 'profiler_log', true ).'</pre></p>';
+            echo '<p>Last Progress: ' . esc_html(get_post_meta( $post->ID, 'profiler_progress', true )) . '</p>';
+            echo '<p>Log Data: <pre style="width: 100%; overflow: scroll;">' . esc_html(get_post_meta( $post->ID, 'profiler_log', true )) . '</pre></p>';
 
             echo '<a href="'.esc_url($sync_url).'" class="button button-primary">Push Now</a>';
         } else {
@@ -274,7 +274,7 @@ class WC_Integration_Profiler extends WC_Integration {
 
         $post_status = get_post_status($post);
         if($post_status != "wc-processing" && $post_status != "wc-completed" && $post_status != "wc-pending") {
-            echo '<p>This Order can not be sent to Profiler while the status is '.$post_status.'</p>';
+            echo '<p>This Order can not be sent to Profiler while the status is ' . esc_html($post_status) . '</p>';
         }
 
     }
@@ -285,14 +285,19 @@ class WC_Integration_Profiler extends WC_Integration {
             return;
         }
 
+        // Sanitize and validate input
+        $order_id = isset($_GET['order_id']) ? absint($_GET['order_id']) : 0;
+        $sync_now = isset($_GET['profiler_sync_now']) ? sanitize_text_field($_GET['profiler_sync_now']) : '';
+
+        if ($order_id === 0) {
+            return;
+        }
+
         // Verify authenticity
-    	check_admin_referer('profiler_wc_sync_' . $_GET['order_id']);
+    	check_admin_referer('profiler_wc_sync_' . $order_id);
 
-        if(isset($_GET['profiler_sync_now']) && $_GET['profiler_sync_now'] == "true") {
-            if(isset($_GET['order_id']) && is_numeric($_GET['order_id'])) {
-                $this->place_order($_GET['order_id']);
-            }
-
+        if($sync_now === 'true') {
+            $this->place_order($order_id);
             wp_die('Profiler Sync Finished');
         }
     }
