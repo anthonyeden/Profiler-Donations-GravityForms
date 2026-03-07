@@ -262,7 +262,7 @@ class ProfilerOrgType {
             echo '<p><strong>Import complete!</strong></p>';
         } else {
             $page = isset($_GET['page']) ? $_GET['page'] : '';
-            echo '<p class="submit"><a href="?page=' . esc_attr($page . '&importnow=true') . '" class="button button-primary">Import Organisations Now</a></p>';
+            echo '<p class="submit"><a href="' . esc_attr('?page=' . $page . '&importnow=true') . '" class="button button-primary">Import Organisations Now</a></p>';
         }
     }
 
@@ -293,6 +293,7 @@ class ProfilerOrgType {
 
             if(!is_array($api_data['dataArray']['row'])) {
                 $this->log("Profiler API returned unexpected data");
+                $this->log("Raw Data: " . print_r($api_data, true));
                 return;
             }
 

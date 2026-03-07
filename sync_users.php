@@ -119,7 +119,7 @@ class ProfilerUsers {
             echo '</select>';
         } elseif($field['type'] == "checkbox") {
             // Checkbox fields
-            echo '<input type="checkbox" name="profiler_users_settings[' . esc_attr($args['field_key']) . ']" value="true" ' . checked('true', $value, false) . ' />';
+            echo '<input type="checkbox" name="' . esc_attr('profiler_users_settings[' . $args['field_key'] . ']') . '" value="true" ' . checked('true', $value, false) . ' />';
         }
     }
 
@@ -144,7 +144,7 @@ class ProfilerUsers {
         echo '<ul>';
         $runCount = 0;
         foreach($runs as $time => $count) {
-            echo '<li>' . esc_html(date("Y-m-d H:i:s", $time)) . ': ' . esc_html($count) . ' ' . esc_html($count == 1 ? "user" : "userss") . ' imported from master site</li>';
+            echo '<li>' . esc_html(date("Y-m-d H:i:s", $time)) . ': ' . esc_html($count) . ' ' . esc_html($count == 1 ? "user" : "users") . ' imported from master site</li>';
             $runCount++;
 
             if($runCount > 10)
