@@ -88,7 +88,7 @@ class GFProfilerCommon extends GFFeedAddOn {
             "required" => true,
             "tooltip" => "Your Instance Domain Name can be found in your login URL: e.g. 'https://instance.profilersystem.com/' is 'instance.profilesystem.com'",
         );
-        
+
         if($this->api_type !== 'json') {
             $fields[] = array(
                 "label" => 'Profiler Database Name',
@@ -97,19 +97,21 @@ class GFProfilerCommon extends GFFeedAddOn {
                 "required" => true,
             );
         }
-        
+
         $fields[] = array(
             "label" => 'Profiler API Key',
             "type" => "text",
             "name" => "profiler".$this->gffield_legacyname."_apikey",
             "required" => true,
+            "style" => "-webkit-text-security:disc;",
         );
-        
+
         $fields[] = array(
             "label" => 'Profiler API Password',
             "type" => "text",
             "name" => "profiler".$this->gffield_legacyname."_apipass",
             "required" => true,
+            "style" => "-webkit-text-security:disc;",
         );
 
         $fields[] = array(
