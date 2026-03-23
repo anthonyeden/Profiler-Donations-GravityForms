@@ -31,10 +31,11 @@ class GFProfilerCommon extends GFFeedAddOn {
         add_filter('gform_stripe_charge_description',       array($this, 'stripe_payment_description'), 10, 5);
         add_filter('gform_stripe_payment_element_initial_payment_information', array($this, 'stripe_elements_setup'), 10, 3);
 
-        // Stripe - allow immediate refund upon payment success.
-        // Designed for Card Update workflows - preauth would be better, but the GF Stripe add-on has issues with this
+        // Stripe - allow immediate refund upon payment success - Designed for Card Update workflows
         add_filter('gform_form_settings_fields',                        array($this, 'stripe_refund_form_setting'), 10, 2);
-        add_action('gform_after_submission',                            array($this, 'stripe_refund_after_submission'), 10, 2);
+        add_filter('gform_stripe_payment_element_authorization_only',   array($this, 'stripe_elements_authorization_only'), 10, 3);
+        add_action('gform_after_submission',                            array($this, 'stripe_pre_auth_after_submission'), 10, 2);
+        add_action('gform_profiler_stripe_pre_auth_cancel',             array($this, 'stripe_pre_auth_cancel'), 10, 2);
 
         // Workaround for change/bug introduced in v2.9.1
         // See https://community.gravityforms.com/t/gf-2-9-stripe-transaction-id-in-gffeedaddon-empty/18770
@@ -1186,18 +1187,18 @@ class GFProfilerCommon extends GFFeedAddOn {
         }
 
         $fields['stripe_immediate_refund'] = array(
-            'title'      => 'Stripe Immediate Refund',
-            'tooltip'    => 'By default, Stripe captures the payment when the form is submitted. If you wish to issue an immediate refund during the form submission process, emails this option. This option is used for Card Update workflows, such as updating regular pledge payment details.',
+            'title'      => 'Stripe Pre-Auth & Immediate Refund',
+            'tooltip'    => 'By default, Stripe captures the payment when the form is submitted. If you wish to perform a pre-auth and then immediatly cancel the pre-auth during the form submission process, emails this option. This option is used for Card Update workflows, such as updating regular pledge payment details.',
             'fields'     => array(),
         );
 
         $fields['stripe_immediate_refund']['fields'][] = array(
             'name'       => 'stripe_immediate_refund_mode',
-            'label'      => 'Stripe Immediate Refund Mode',
+            'label'      => 'Stripe Pre-Auth & Immediate Refund Mode',
             'type'       => 'checkbox',
             'choices' => array(
                 array(
-                    'label'         => 'Enable Immediate Refund',
+                    'label'         => 'Enable Pre-Auth & Immediate Refund',
                     'name'          => 'stripe_immediate_refund',
                     'default_value' => 0,
                 ),
@@ -1207,20 +1208,75 @@ class GFProfilerCommon extends GFFeedAddOn {
         return $fields;
     }
 
-    public function stripe_refund_after_submission($entry, $form) {
-        // Processes the refund from Stripe
+    public function stripe_elements_authorization_only($result, $form, $feed) {
+        // This function is used to set Stripe Elements to authorization-only mode, which allows for cancellation of the pre-auth during form submission
+
+        if($result == true) {
+            return $result;
+        }
+
+        if(!isset($form['stripe_immediate_refund']) || $form['stripe_immediate_refund'] != 1) {
+            return $result;
+        }
+
+        return true;
+    }
+
+    public function stripe_pre_auth_after_submission($entry, $form) {
+        // This is called after the form is submitted. It triggers a pre-auth cancellation.
+
+        if(!isset($form['stripe_immediate_refund']) || $form['stripe_immediate_refund'] != 1) {
+            return $result;
+        }
+
+        // Prevent this function from running multiple times for the same entry
+        static $setup_events_already = array();
+        if(in_array($entry['id'], $setup_events_already)) {
+            return;
+        } else {
+            $setup_events_already[] = $entry['id'];
+        }
+
+        if(isset($_GET['payment_intent']) && !empty($_GET['payment_intent'])) {
+            // Store the submitted PI as meta - GF has a bug where pre-auth's are deemed to 'fail' and don't store the Transaction ID
+            gform_add_meta($entry['id'], 'stripe_pre_auth_transaction_id', $_GET['payment_intent'], $form['id']);
+        }
+
+        // Create a once-off scheduled task to cancel the pre-auth after submission.
+        if(!wp_next_scheduled('gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']))) {
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth - This pre-authorised payment will be cancelled shortly due to form settings.', $this->_slug, 'success');
+            wp_schedule_single_event(time() + 30, 'gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']));
+        }
+    }
+
+    public function stripe_pre_auth_cancel($entry_id, $form_id) {
+        // This function is used to cancel the Stripe pre-auth after form submission. It's called via a WP-Cron action.
+
+        $entry = GFAPI::get_entry($entry_id);
+        $form = GFAPI::get_form($form_id);
 
         if(!isset($form['stripe_immediate_refund']) || $form['stripe_immediate_refund'] != 1) {
             return $entry;
         }
 
-        if(!isset($entry['transaction_id']) || substr($entry['transaction_id'], 0, 3) !== "pi_") {
+        if(gform_get_meta($entry['id'], 'stripe_pre_auth_cancel_id') != false) {
+            // If refund has already been processed, don't try and refund again
             return $entry;
         }
 
-        if(gform_get_meta($entry['id'], 'stripe_immediate_refund_id') != false) {
-            // If refund has already been processed, don't try and refund again
-            return $entry;
+        if(!isset($entry['transaction_id']) || substr($entry['transaction_id'], 0, 3) !== "pi_") {
+
+            // Before failing, try and get the PI from the meta field
+            $pre_auth_transaction_id = gform_get_meta($entry['id'], 'stripe_pre_auth_transaction_id');
+
+            if(empty($pre_auth_transaction_id) || substr($pre_auth_transaction_id, 0, 3) !== "pi_") {
+                // If the transaction ID isn't in the entry or the meta, we can't process the cancellation
+                GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Cancel - Failed. No valid Payment Intent ID found in entry or entry meta.', $this->_slug, 'error');
+                return $entry;
+
+            } else {
+                $entry['transaction_id'] = $pre_auth_transaction_id;
+            }
         }
 
         try {
@@ -1233,30 +1289,30 @@ class GFProfilerCommon extends GFFeedAddOn {
             \Stripe\Stripe::setApiKey($stripe_options[$stripe_options['api_mode'] . '_secret_key']);
 
         } catch(Exception $e) {
-            error_log("STRIPE/PROFILER IMMEDIATE REFUND SETUP ERROR: " . print_r($e, true));
-            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Failed. Error Technical Information (Setup): ' . $e->getMessage(), $this->_slug, 'error');
-            return $entry;
+            error_log("STRIPE/PROFILER PRE-AUTH CANCEL SETUP ERROR: " . print_r($e, true));
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Cancel - Failed. Error Technical Information (Setup): ' . $e->getMessage(), $this->_slug, 'error');
+            return;
         }
 
         try {
-            $refund = \Stripe\Refund::create([
-                'payment_intent' => $entry['transaction_id'],
-                'metadata' => array(
-                    'refund_source' => 'profiler_gravityforms_stripe_immediate_refund',
-                ),
-            ]);
+            $payment_intent = \Stripe\PaymentIntent::retrieve($entry['transaction_id']);
 
-            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Successful. Refund ID: ' . $refund->id, $this->_slug, 'success');
-            gform_add_meta($entry['id'], 'stripe_immediate_refund_id', $refund->id, $form['id']);
+            if($payment_intent->status == "canceled") {
+                // If the payment intent isn't in a pre-auth state, don't try and cancel
+                GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Cancel - Not Required. Payment Intent is already in canceled state.', $this->_slug, 'info');
+                return;
+            }
+
+            $refund = $payment_intent->cancel();
+
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Cancel - Successful. Refund ID: ' . $refund->id, $this->_slug, 'success');
+            gform_add_meta($entry['id'], 'stripe_pre_auth_cancel_id', $refund->id, $form['id']);
 
         } catch(Exception $e) {
-            error_log("STRIPE/PROFILER IMMEDIATE REFUND ERROR: " . print_r($e, true));
-            GFAPI::add_note($entry['id'], 0, '', 'Stripe Immediate Refund - Failed. Error Technical Information: ' . $e->getMessage(), $this->_slug, 'error');
+            error_log("STRIPE/PROFILER PRE-AUTH CANCEL ERROR: " . print_r($e, true));
+            GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Cancel - Failed. Error Technical Information: ' . $e->getMessage(), $this->_slug, 'error');
         }
-
-        return $entry;
     }
-
 
     public function meta_box_entry($meta_boxes, $entry, $form) {
         // Custom Metabox
