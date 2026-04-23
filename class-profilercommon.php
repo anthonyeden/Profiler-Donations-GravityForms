@@ -1239,13 +1239,54 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if(isset($_GET['payment_intent']) && !empty($_GET['payment_intent'])) {
             // Store the submitted PI as meta - GF has a bug where pre-auth's are deemed to 'fail' and don't store the Transaction ID
-            gform_add_meta($entry['id'], 'stripe_pre_auth_transaction_id', $_GET['payment_intent'], $form['id']);
-        }
 
-        // Create a once-off scheduled task to cancel the pre-auth after submission.
-        if(!wp_next_scheduled('gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']))) {
-            GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth - This pre-authorised payment will be cancelled shortly due to form settings.', $this->_slug, 'success');
-            wp_schedule_single_event(time() + 30, 'gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']));
+            // Check if the supplied Payment Intent ID was created in the last 2 minutes.
+            // This is a basic check to ensure older PIs can't be manipulated by a malicious user.
+            try {
+                if(!class_exists('\Stripe\Stripe')) {
+                    require_once(plugin_dir_path(__DIR__) . 'gravityformsstripe/includes/autoload.php');
+                }
+
+                // Set Stripe API key.
+                $stripe_options = get_option('gravityformsaddon_gravityformsstripe_settings');
+                \Stripe\Stripe::setApiKey($stripe_options[$stripe_options['api_mode'] . '_secret_key']);
+
+            } catch(Exception $e) {
+                error_log("STRIPE/PROFILER PRE-AUTH CANCEL VERIFY SETUP ERROR: " . print_r($e, true));
+                GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Verify Cancel - Failed. Error Technical Information (Setup): ' . $e->getMessage(), $this->_slug, 'error');
+                return;
+            }
+
+            try {
+                $payment_intent = \Stripe\PaymentIntent::retrieve($entry['transaction_id']);
+
+                // Check age of PI
+                $pi_created_time = $payment_intent->created;
+                $current_time = time();
+                $age_of_pi = $current_time - $pi_created_time;
+
+                if($age_of_pi <= 300) {
+                    // If the PI was created in the last 5 minutes, we can be reasonably sure it's the correct PI and not a manipulated older PI
+                    GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Verify - Successful. Payment Intent ID: ' . $payment_intent->id, $this->_slug, 'success');
+
+                    // Store the Payment Intent ID
+                    gform_add_meta($entry['id'], 'stripe_pre_auth_transaction_id', $_GET['payment_intent'], $form['id']);
+
+                    // Create a once-off scheduled task to cancel the pre-auth after submission.
+                    if(!wp_next_scheduled('gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']))) {
+                        GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth - This pre-authorised payment will be cancelled shortly due to form settings.', $this->_slug, 'success');
+                        wp_schedule_single_event(time() + 30, 'gform_profiler_stripe_pre_auth_cancel', array($entry['id'], $form['id']));
+                    }
+
+                } else {
+                    // The PI is too old - log an error
+                    GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Verify - Error. The Payment Intent associated with this entry was created more than 5 minutes ago. It can\'t be cancelled. Payment Intent ID: ' . $payment_intent->id, $this->_slug, 'warning');
+                }
+
+            } catch(Exception $e) {
+                error_log("STRIPE/PROFILER PRE-AUTH VERIFY ERROR: " . print_r($e, true));
+                GFAPI::add_note($entry['id'], 0, '', 'Stripe Pre-Auth Verify - Failed. Error Technical Information: ' . $e->getMessage(), $this->_slug, 'error');
+            }
         }
     }
 
