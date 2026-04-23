@@ -1111,12 +1111,12 @@ class GFProfilerCommon extends GFFeedAddOn {
                         'name' => $name
                     )
                 );
+            }
 
-                // Return existing customer ID
-                if(isset($stripe_all_customers['data'][0]['id'])) {
-                    $cached_customer_ids[$email_address] = $stripe_all_customers['data'][0]['id'];
-                    return $stripe_all_customers['data'][0]['id'];
-                }
+            // Return existing customer ID
+            if(isset($stripe_all_customers['data'][0]['id'])) {
+                $cached_customer_ids[$email_address] = $stripe_all_customers['data'][0]['id'];
+                return $stripe_all_customers['data'][0]['id'];
             }
         }
 
