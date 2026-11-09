@@ -149,8 +149,8 @@ class GFProfilerPostDonate extends GFProfilerCommon {
         if(isset($pfResponse['dataArray']['success']) && $pfResponse['dataArray']['success'] === true) {
             // Store the Integration ID as meta so we can use it later
             if(isset($pfResponse['dataArray']['integrationId'])) {
-                gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['integrationId'], $form['id']);
-                gform_add_meta($entry["id"], "profiler_integration_guid", $pfResponse['dataArray']['integrationGuid'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_integrationid_" . $feed['id'], $pfResponse['dataArray']['integrationId'], $form['id']);
+                gform_add_meta($entry["id"], "profiler_integration_guid_" . $feed['id'], $pfResponse['dataArray']['integrationGuid'], $form['id']);
             }
         } else {
             // Profiler failed. Send the failure email.

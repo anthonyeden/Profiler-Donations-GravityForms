@@ -487,7 +487,14 @@ class GFProfilerCommon extends GFFeedAddOn {
             $logsToStore = str_replace($postData['cardnumber'], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apikey], "--REDACTED--", $logsToStore);
             $logsToStore = str_replace($postData[$this->apifield_apipass], "--REDACTED--", $logsToStore);
-            gform_add_meta($entry["id"], "profiler_logs", $logsToStore, $form['id']);
+
+            $integration_feeds = gform_get_meta($entry["id"], "profiler_integration_feeds") ?: array();
+            if(!in_array($feed['id'], $integration_feeds)) {
+                $integration_feeds[] = $feed['id'];
+                gform_update_meta($entry["id"], "profiler_integration_feeds", $integration_feeds, $form['id']);
+            }
+
+            gform_add_meta($entry["id"], "profiler_logs_" . $feed['id'], $logsToStore, $form['id']);
 
             if(method_exists($this, 'process_feed_success')) {
                 $this->process_feed_success($feed, $entry, $form, $pfResponse, $postData);
@@ -1360,10 +1367,8 @@ class GFProfilerCommon extends GFFeedAddOn {
 
         if($this->get_active_feeds($form['id'])) {
 
-            $profiler_logs_meta = gform_get_meta($entry['id'], 'profiler_logs');
-
-            if(!empty($profiler_logs_meta)) {
-                $meta_boxes[$this->_slug] = array(
+            if(!isset($meta_boxes['profiler_api_details'])) {
+                $meta_boxes['profiler_api_details'] = array(
                     'title'    => 'Profiler API',
                     'callback' => array($this, 'meta_box_entry_render'),
                     'context'  => 'side',
@@ -1378,12 +1383,25 @@ class GFProfilerCommon extends GFFeedAddOn {
     public function meta_box_entry_render($data) {
         // Render the Custom Metabox
         $html = '';
+        $meta_fields = array();
 
-        $meta_fields = array(
-            "profiler_integrationid" => "Integration ID",
-            "profiler_integration_guid" => "Integration GUID",
-            "profiler_logs" => "Profiler API Logs",
-        );
+        $feeds = gform_get_meta($data['entry']['id'], 'profiler_integration_feeds') ?: array();
+
+        if(!empty($feeds)) {
+            foreach($feeds as $feed_id) {
+                $meta_fields["profiler_integrationid_" . $feed_id] = "Integration ID (Feed #" . $feed_id . ")";
+                $meta_fields["profiler_integration_guid_" . $feed_id] = "Integration GUID (Feed #" . $feed_id . ")";
+                $meta_fields["profiler_logs_" . $feed_id] = "Profiler API Logs (Feed #" . $feed_id . ")";
+            }
+        }
+
+        if(count($meta_fields) == 0) {
+            $meta_fields = array(
+                "profiler_integrationid" => "Integration ID",
+                "profiler_integration_guid" => "Integration GUID",
+                "profiler_logs" => "Profiler API Logs",
+            );
+        }
 
         foreach($meta_fields as $field_name => $field_title) {
 
