@@ -1001,16 +1001,17 @@ class GFProfilerCommon extends GFFeedAddOn {
         if (strpos($entry, '.') === false) {
             $entry .= ".00";
         }
+
         if (strpos($entry, '$') !== false) {
             $startsAt = strpos($entry, "$") + strlen("$");
             $endsAt = strlen($entry);
             $amount = substr($entry, 0, $endsAt);
             $amount = preg_replace("/[^0-9,.]/", "", $amount);
+
         } else {
             $amount = preg_replace("/[^0-9,.]/", "", sprintf("%.2f", $entry));
         }
 
-        $amount = str_replace('.', '', $amount);
         $amount = str_replace(',', '', $amount);
         return $amount;
     }

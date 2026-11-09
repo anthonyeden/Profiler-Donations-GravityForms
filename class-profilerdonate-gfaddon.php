@@ -602,9 +602,9 @@ class GFProfilerDonate extends GFProfilerCommon {
             $postData['donationamount'] = $this->getTotalAmount($entry, $form);
             $postData['pledgeamount'] = $this->getTotalAmount($entry, $form);
         } else {
-            $postData['amount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
-            $postData['donationamount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
-            $postData['pledgeamount'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']);
+            $postData['amount'] = $this->clean_amount($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']));
+            $postData['donationamount'] = $this->clean_amount($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']));
+            $postData['pledgeamount'] = $this->clean_amount($this->get_field_value($form, $entry, $feed['meta']['profilerdonation_amount']));
         }
 
         // Credit card fields:
