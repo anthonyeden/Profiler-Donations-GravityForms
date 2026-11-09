@@ -242,7 +242,7 @@ class GFProfilerCommon extends GFFeedAddOn {
                 ),
                 array(
                     "value" => "bundled_ca",
-                    "label" => "Use Plugin Bundled CA Certs"
+                    "label" => "Use WordPress Bundled CA Certs"
                 ),
                 array(
                     "value" => "dontverifypeer",
@@ -778,9 +778,8 @@ class GFProfilerCommon extends GFFeedAddOn {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 
         if($ssl_mode == "bundled_ca") {
-            // Use the CA Cert bundled with this plugin
-            // Sourced from https://curl.haxx.se/ca/cacert.pem
-            curl_setopt($ch, CURLOPT_CAINFO, plugin_dir_path(__FILE__) . "cacert.pem");
+            // Use the CA Cert bundled with WordPress - sourced from https://curl.haxx.se/ca/cacert.pem
+            curl_setopt($ch, CURLOPT_CAINFO, ABSPATH . WPINC . '/certificates/ca-bundle.crt');
 
         } elseif($ssl_mode == "dontverifypeer") {
             // Don't verify the SSL peer. This is bad. No one should do this in production.
