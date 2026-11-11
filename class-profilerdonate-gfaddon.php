@@ -678,7 +678,7 @@ class GFProfilerDonate extends GFProfilerCommon {
         }
 
         if($feed['meta']['profilerdonation_donationpurposecode'] !== "") {
-            $postData['paymentPupose'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
+            $postData['paymentPurpose'] = $this->get_field_value($form, $entry, $feed['meta']['profilerdonation_donationpurposecode']);
         }
 
         if($feed['meta']['profilerdonation_donationtagcode'] !== "") {
