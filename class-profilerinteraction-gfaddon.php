@@ -325,8 +325,10 @@ class GFProfilerInteraction extends GFProfilerCommon {
 
         } else {
             // Store the Integration ID as meta so we can use it later
-            if(isset($pfResponse['dataArray']['id']))
+            if(isset($pfResponse['dataArray']['id'])) {
+                gform_add_meta($entry["id"], "profiler_integrationid_" . $feed['id'], $pfResponse['dataArray']['id'], $form['id']);
                 gform_add_meta($entry["id"], "profiler_integrationid", $pfResponse['dataArray']['id'], $form['id']);
+            }
         }
 
     }
